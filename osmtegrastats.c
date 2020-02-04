@@ -56,11 +56,10 @@ int main(int argc, char *argv[])
 	while (1) {
 		for (i = 0; i < 4; i++) {
 			tegra_read(&devices[i], buf, 255);
-			printf("%s:%s,", devices[i].name, buf);
+			printf("%s,", buf);
 		}
 		tegra_read(&devices[4], buf, 255);
-		printf("%s:%s", devices[4].name, buf);
-		puts("");
+		puts(buf);
 		usleep(interval * 1000);
 	}
 }
