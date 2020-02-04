@@ -21,4 +21,5 @@ struct tegra_device_info
 
 extern int tegra_open_device(struct tegra_device_info *tdi, char *name, char *filename);
 extern int tegra_read(struct tegra_device_info *tdi, char *buf, size_t buflen);
+extern int tegra_read_int(struct tegra_device_info *tdi);
 extern int tegra_close(struct tegra_device_info *tdi);

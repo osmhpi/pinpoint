@@ -24,6 +24,13 @@ int tegra_read(struct tegra_device_info *tdi, char *buf, size_t buflen)
 	return pos;
 }
 
+int tegra_read_int(struct tegra_device_info *tdi)
+{
+	char buf[255];
+	tegra_read(tdi, buf, 255);
+	return atoi(buf);
+}
+
 int tegra_close(struct tegra_device_info *tdi)
 {
 	fclose(tdi->fp);
