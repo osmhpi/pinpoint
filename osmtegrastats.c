@@ -40,8 +40,8 @@ int tegra_close(struct tegra_device_info *tdi)
 int main(int argc, char *argv[])
 {
 	long interval = 500;
-	int i;
-	char buf[255] = {};
+	int i, pos, avail, nbytes;
+	char buf[255];
 	struct tegra_device_info devices[5];
 
 	if (argc > 1)
@@ -54,12 +54,17 @@ int main(int argc, char *argv[])
 	tegra_open_device(&devices[4], "IN",  TEGRA_IN_DEV );
 
 	while (1) {
-		for (i = 0; i < 4; i++) {
-			tegra_read(&devices[i], buf, 255);
-			printf("%s,", buf);
+		avail = sizeof(buf);
+		pos = 0;
+		for (i = 0; i < 5; i++) {
+			nbytes = tegra_read(&devices[i], buf + pos, avail);
+			pos += nbytes;
+			avail -= nbytes;
+			buf[pos - 1] = ',';
 		}
-		tegra_read(&devices[4], buf, 255);
+		buf[pos - 1] = '\0';
 		puts(buf);
+		// some clock skew :(
 		usleep(interval * 1000);
 	}
 }
