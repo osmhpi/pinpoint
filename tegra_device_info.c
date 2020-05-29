@@ -5,7 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 
-int tegra_open_device(struct tegra_device_info *tdi, char *name, char *filename)
+int tegra_open_device(struct tegra_device_info *tdi, const char *name, const char *filename)
 {
 	bzero(tdi, sizeof(*tdi));
 	strncpy(tdi->name, name, TEGRA_NAME_LEN);

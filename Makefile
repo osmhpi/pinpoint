@@ -14,6 +14,7 @@ all: $(TARGETS)
 osmtegrastats: osmtegrastats.o tegra_device_info.o
 
 tegraenergyperf: tegraenergyperf.o tegra_device_info.o
+	$(LINK.cc) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
 %.d: %.c
 	$(CC) -MM $(CFLAGS) $< > $@
