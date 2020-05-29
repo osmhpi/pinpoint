@@ -7,7 +7,9 @@
 #include <condition_variable>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <mutex>
+#include <sstream>
 #include <thread>
 #include <vector>
 
@@ -15,6 +17,26 @@
 #include <unistd.h>
 
 /**********************************************************/
+
+template<char delimiter>
+class WordDelimitedBy : public std::string
+{};
+
+template<char delimiter>
+std::istream& operator>>(std::istream& is, WordDelimitedBy<delimiter>& output)
+{
+	std::getline(is, output, delimiter);
+	return is;
+}
+
+template<char delimiter>
+std::vector<std::string> str_split(const std::string & text)
+{
+	std::istringstream iss(text);
+	return std::vector<std::string>
+			((std::istream_iterator<WordDelimitedBy<delimiter>>(iss)),
+		      std::istream_iterator<WordDelimitedBy<delimiter>>());
+}
 
 struct ProgArgs
 {
@@ -54,8 +76,7 @@ struct ProgArgs
 					exit(2);
 					break;
 				case 'e':
-					std::cerr << "Not implemented" << std::endl;
-					exit(2);
+					devices = str_split<','>(optarg);
 					break;
 				case 'r':
 					runs = atoi(optarg);
