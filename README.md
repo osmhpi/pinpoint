@@ -17,7 +17,7 @@ More sophisticated tool, for programm profiling. Use if you want to start/stop y
 
 The inferface is to some extent inspired by `perf stat`.
 
-	Usage: tegraenergyperf -h|[-c|-p] -e dev1,dev2,... ([-r|-d|-i|-b|-a] N)* [--] workload [args]
+	Usage: tegraenergyperf -h|[-c|-p] [-e dev1,dev2,...] ([-r|-d|-i|-b|-a] N)* [--] workload [args]
 		-h Print this help and exit
 		-c Continuously print power levels (mW) to stdout (skip energy stats)
 		-p Measure energy-delayed product (measure joules if not provided)

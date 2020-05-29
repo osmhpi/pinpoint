@@ -119,7 +119,7 @@ struct ProgArgs
 
 	void printHelpAndExit(char *progname, int exitcode = 0)
 	{
-		std::cout << "Usage: " << progname << " -h|[-c|-p] -e dev1,dev2,... ([-r|-d|-i|-b|-a] N)* [--] workload [args]" << std::endl;
+		std::cout << "Usage: " << progname << " -h|[-c|-p] [-e dev1,dev2,...] ([-r|-d|-i|-b|-a] N)* [--] workload [args]" << std::endl;
 		std::cout << "\t-h Print this help and exit" << std::endl;
 		std::cout << "\t-c Continuously print power levels (mW) to stdout (skip energy stats)" << std::endl;
 		std::cout << "\t-p Measure energy-delayed product (measure joules if not provided)" << std::endl;
