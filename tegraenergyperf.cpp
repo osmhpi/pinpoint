@@ -220,6 +220,13 @@ private:
 class Experiment
 {
 public:
+	struct Result
+	{
+		using time_res = std::chrono::duration<double, std::ratio<1>>;
+		Sampler::result_t samples;
+		time_res workload_wall_time;
+	};
+
 	Experiment(const ProgArgs & args) :
 		m_args(args)
 	{
@@ -250,24 +257,32 @@ public:
 		std::cerr << std::endl;
 
 		std::vector<double> means(m_args.devices.size(), 0);
+		double mean_time = 0;
 		for (const auto & res: m_results) {
 			for (int i = 0; i < means.size(); i++) {
-				means[i] += calcResult(res[i]) / m_args.runs;
+				means[i] += calcResult(res.samples[i]) / m_args.runs;
 			}
+			mean_time += res.workload_wall_time.count() / m_args.runs;
 		}
 
 		std::vector<double> variances(m_args.devices.size(), 0);
+		double variance_time = 0;
 		for (const auto & res: m_results) {
 			for (int i = 0; i < variances.size(); i++) {
-				double vi = calcResult(res[i]) - means[i];
+				double vi = calcResult(res.samples[i]) - means[i];
 				variances[i] += vi * vi / m_args.runs;
 			}
+
+			double vti = res.workload_wall_time.count() - mean_time;
+			variance_time += vti * vti / m_args.runs;
 		}
 
 		std::vector<double> stddev_percents(m_args.devices.size(), 0);
 		for (int i = 0; i < stddev_percents.size(); i++) {
 			stddev_percents[i] = (std::sqrt(variances[i]) / means[i]) * 100;
 		}
+		double stddev_percent_time = (std::sqrt(variance_time) / mean_time) * 100;
+
 
 		for (int i = 0; i < means.size(); i++) {
 			std::cerr << "\t"
@@ -281,14 +296,23 @@ public:
 		}
 
 		std::cerr << std::endl;
+		std::cerr << "\t"
+			<< std::fixed << std::setprecision(8)
+			<< mean_time << " seconds time elapsed ";
+		if (m_args.runs > 1) std::cerr
+			<< std::fixed << std::setprecision(2)
+			<< "( +- " << stddev_percent_time << "% )";
+		std::cerr << std::endl;
+
+		std::cerr << std::endl;
 	}
 
 
 private:
 	const ProgArgs & m_args;
-	std::vector<Sampler::result_t> m_results;
+	std::vector<Result> m_results;
 
-	Sampler::result_t run_single()
+	Result run_single()
 	{
 		Sampler sampler(m_args.interval, m_args.devices);
 
@@ -297,6 +321,7 @@ private:
 			std::this_thread::sleep_for(m_args.before);
 		}
 
+		auto start_time = std::chrono::high_resolution_clock::now();
 		pid_t workload;
 		if ((workload = fork())) {
 			sampler.start(std::max(-m_args.before, std::chrono::milliseconds(0)));
@@ -305,7 +330,12 @@ private:
 			execvp(m_args.workload_and_args[0], m_args.workload_and_args);
 		}
 
-		return sampler.stop(std::chrono::milliseconds(m_args.after));
+		auto end_time = std::chrono::high_resolution_clock::now();
+
+		Result result;
+		result.samples = sampler.stop(std::chrono::milliseconds(m_args.after));
+		result.workload_wall_time = std::chrono::duration_cast<Result::time_res>(end_time - start_time);
+		return result;
 	}
 
 	double calcResult(TegraDeviceInfo::accumulate_t value)
