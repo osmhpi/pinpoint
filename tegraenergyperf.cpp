@@ -78,8 +78,6 @@ struct ProgArgs
 					break;
 				case 'p':
 					energy_delayed_product = true;
-					std::cerr << "Not implemented" << std::endl;
-					exit(2);
 					break;
 				case 'e':
 					devices = str_split<','>(optarg);
@@ -297,7 +295,7 @@ public:
 		double mean_time = 0;
 		for (const auto & res: m_results) {
 			for (int i = 0; i < means.size(); i++) {
-				means[i] += calcResult(res.samples[i]) / m_args.runs;
+				means[i] += calcResult(res, i) / m_args.runs;
 			}
 			mean_time += res.workload_wall_time.count() / m_args.runs;
 		}
@@ -306,7 +304,7 @@ public:
 		double variance_time = 0;
 		for (const auto & res: m_results) {
 			for (int i = 0; i < variances.size(); i++) {
-				double vi = calcResult(res.samples[i]) - means[i];
+				double vi = calcResult(res, i) - means[i];
 				variances[i] += vi * vi / m_args.runs;
 			}
 
@@ -374,16 +372,19 @@ private:
 		return result;
 	}
 
-	double calcResult(TegraDeviceInfo::accumulate_t value)
+	double calcResult(const Result & res, const int sample_index)
 	{
+		using sec_double = std::chrono::duration<double, std::ratio<1>>;
 		// Assuming:
 		//   * constant interval
 		//   * accumulate_t contains sum of milli-Watt measurements
 		//   * we take lower Darboux integral ... :( [since we measure at start of interval]
+		
+		TegraDeviceInfo::accumulate_t power_sum_mW = res.samples[sample_index];
+		double energy_mJ = (double) power_sum_mW * std::chrono::duration_cast<sec_double>(m_args.interval).count();
+		double edp_mJs = energy_mJ * std::chrono::duration_cast<sec_double>(res.workload_wall_time).count();
 
-		// TODO: implement EDP
-		auto interval_in_s = std::chrono::duration_cast<std::chrono::duration<double, std::ratio<1>>>(m_args.interval);
-		return (double) value * interval_in_s.count();
+		return m_args.energy_delayed_product ? edp_mJs : energy_mJ;
 	}
 };
 
