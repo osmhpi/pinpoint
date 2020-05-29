@@ -30,6 +30,11 @@ public:
 		return std::string(m_tdi.name);
 	}
 
+	int raw_read(char *buf, size_t buflen)
+	{
+		return tegra_read(&m_tdi, buf, buflen);
+	}
+	
 	int read()
 	{
 		char buf[255];

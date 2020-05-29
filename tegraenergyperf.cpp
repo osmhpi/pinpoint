@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cmath>
 #include <condition_variable>
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
@@ -41,6 +42,7 @@ std::vector<std::string> str_split(const std::string & text)
 struct ProgArgs
 {
 	// Configurable via command line options
+	bool continuous_print_flag;
 	bool energy_delayed_product;
 	std::vector<std::string> devices;
 	unsigned int runs;
@@ -54,6 +56,7 @@ struct ProgArgs
 	std::string unit;
 
 	ProgArgs(int argc, char *argv[]):
+		continuous_print_flag(false),
 		energy_delayed_product(false),
 		devices{"CPU", "GPU", "SOC", "DDR", "IN"},
 		interval(500),
@@ -64,11 +67,14 @@ struct ProgArgs
 		workload_and_args(nullptr)
 	{
 		int c;
-		while ((c = getopt (argc, argv, "hpe:r:d:i:b:a:")) != -1) {
+		while ((c = getopt (argc, argv, "hcpe:r:d:i:b:a:")) != -1) {
 			switch (c) {
 				case 'h':
 				case '?':
 					printHelpAndExit(argv[0]);
+					break;
+				case 'c':
+					continuous_print_flag = true;
 					break;
 				case 'p':
 					energy_delayed_product = true;
@@ -115,8 +121,9 @@ struct ProgArgs
 
 	void printHelpAndExit(char *progname, int exitcode = 0)
 	{
-		std::cout << "Usage: " << progname << " -h|[-p] -e dev1,dev2,... ([-r|-d|-i|-b|-a] N)* [--] workload [args]" << std::endl;
+		std::cout << "Usage: " << progname << " -h|[-c|-p] -e dev1,dev2,... ([-r|-d|-i|-b|-a] N)* [--] workload [args]" << std::endl;
 		std::cout << "\t-h Print this help and exit" << std::endl;
+		std::cout << "\t-c Continuously print power levels (mW) to stdout (skip energy stats)" << std::endl;
 		std::cout << "\t-p Measure energy-delayed product (measure joules if not provided)" << std::endl;
 		std::cout << "\t-e Comma seperated list of measured devices (default: all)" << std::endl;
 		std::cout << "\t-r Number of runs (default: " << runs << ")" << std::endl;
@@ -136,7 +143,7 @@ struct Sampler
 	using result_t = std::vector<TegraDeviceInfo::accumulate_t>;
 	std::vector<TegraDeviceInfo> devices;
 
-	Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & devNames) :
+	Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & devNames, bool continuous_print_flag = false) :
 		m_interval(interval),
 		m_done(false),
 		m_ticks(0)
@@ -158,7 +165,12 @@ struct Sampler
 				std::runtime_error("Unknown device \"" + name + "\"");
 		}
 
-		m_worker = std::thread([this]{ tick(); });
+		std::function<void()> atick  = [this]{accumulate_tick();};
+		std::function<void()> cptick = [this]{continuous_print_tick();};
+
+		m_worker = std::thread([this, continuous_print_flag, &atick, &cptick]{ run(
+			continuous_print_flag ? cptick : atick
+		); });
 	}
 
 	void start(std::chrono::milliseconds delay = std::chrono::milliseconds(0))
@@ -197,7 +209,7 @@ private:
 	std::atomic<bool> m_done;
 	long m_ticks;
 
-	void tick()
+	void run(std::function<void()> tick)
 	{
 		std::unique_lock<std::mutex> lk(m_start_mutex);
 		m_start_signal.wait(lk);
@@ -205,14 +217,34 @@ private:
 		while (!m_done.load()) {
 			// FIXME: tiny skid by scheduling + now(). Global start instead?
 			auto entry = std::chrono::high_resolution_clock::now();
-			for (auto & dev: devices) {
-				dev.accumulate();
-			}
+			tick();
 			m_ticks++;
 			std::this_thread::sleep_until(entry + m_interval);
 		}
 	}
 
+	void accumulate_tick()
+	{
+		for (auto & dev: devices) {
+			dev.accumulate();
+		}
+	}
+
+	void continuous_print_tick()
+	{
+		static char buf[255];
+		size_t avail = sizeof(buf);
+		size_t pos = 0;
+		size_t nbytes;
+		for (auto & dev: devices) {
+			nbytes = dev.raw_read(buf + pos, avail);
+			pos += nbytes;
+			avail -= nbytes;
+			buf[pos - 1] = ',';
+		}
+		buf[pos - 1] = '\0';
+		puts(buf);
+	}
 };
 
 /**********************************************************/
@@ -236,6 +268,8 @@ public:
 	void run()
 	{
 		for (int i = 0; i < m_args.runs; i++) {
+			if (m_args.continuous_print_flag && m_args.runs > 1)
+				std::cout << "### Run " << i << std::endl;
 			m_results.push_back(run_single());
 			std::this_thread::sleep_for(m_args.delay);
 		}
@@ -243,6 +277,9 @@ public:
 
 	void printResult()
 	{
+		if (m_args.continuous_print_flag)
+			return;
+	
 		std::cerr << "Tegra energy counter stats for '";
 		for (char **a = m_args.workload_and_args; a && *a; ++a) {
 			std::cerr << *a << " ";
@@ -283,7 +320,6 @@ public:
 		}
 		double stddev_percent_time = (std::sqrt(variance_time) / mean_time) * 100;
 
-
 		for (int i = 0; i < means.size(); i++) {
 			std::cerr << "\t"
 				<< std::fixed << std::setprecision(2)
@@ -294,8 +330,8 @@ public:
 
 			std::cerr << std::endl;
 		}
-
 		std::cerr << std::endl;
+
 		std::cerr << "\t"
 			<< std::fixed << std::setprecision(8)
 			<< mean_time << " seconds time elapsed ";
@@ -314,7 +350,7 @@ private:
 
 	Result run_single()
 	{
-		Sampler sampler(m_args.interval, m_args.devices);
+		Sampler sampler(m_args.interval, m_args.devices, m_args.continuous_print_flag);
 
 		if (m_args.before.count() > 0) {
 			sampler.start();
