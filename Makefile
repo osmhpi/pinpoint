@@ -6,6 +6,8 @@ OBJ = $(CFILES:%.c=%.o) $(CXXFILES:%.cpp=%.o)
 DEP = $(OBJ:%.o=%.d)
 
 CFLAGS = -O3
+CXXFLAGS = $(CFLAGS)
+LOADLIBES = -lpthread
 
 TARGETS = osmtegrastats tegraenergyperf
 
