@@ -17,8 +17,7 @@ int main(int argc, char *argv[])
 	tegra_open_device(&devices[0], "CPU", TEGRA_CPU_DEV);
 	tegra_open_device(&devices[1], "GPU", TEGRA_GPU_DEV);
 	tegra_open_device(&devices[2], "SOC", TEGRA_SOC_DEV);
-	tegra_open_device(&devices[3], "DDR", TEGRA_DDR_DEV);
-	tegra_open_device(&devices[4], "IN",  TEGRA_IN_DEV );
+	tegra_open_device(&devices[3], "VDDRQ", TEGRA_VDDRQ_DEV);
 
 	while (1) {
 		avail = sizeof(buf);

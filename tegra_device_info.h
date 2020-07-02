@@ -2,12 +2,12 @@
 
 #include <stdio.h>
 
-#define TEGRA_GPU_DEV  "/sys/bus/i2c/devices/0-0040/iio_device/in_power0_input"
-#define TEGRA_SOC_DEV  "/sys/bus/i2c/devices/0-0040/iio_device/in_power1_input"
-#define TEGRA_WIFI_DEV "/sys/bus/i2c/devices/0-0040/iio_device/in_power2_input"
-#define TEGRA_IN_DEV   "/sys/bus/i2c/devices/0-0041/iio_device/in_power0_input"
-#define TEGRA_CPU_DEV  "/sys/bus/i2c/devices/0-0041/iio_device/in_power1_input"
-#define TEGRA_DDR_DEV  "/sys/bus/i2c/devices/0-0041/iio_device/in_power2_input"
+#define TEGRA_GPU_DEV    "/sys/bus/i2c/devices/1-0040/iio_device/in_power0_input"
+#define TEGRA_CPU_DEV    "/sys/bus/i2c/devices/1-0040/iio_device/in_power1_input"
+#define TEGRA_SOC_DEV    "/sys/bus/i2c/devices/1-0040/iio_device/in_power2_input"
+#define TEGRA_CV_DEV     "/sys/bus/i2c/devices/1-0041/iio_device/in_power0_input"
+#define TEGRA_VDDRQ_DEV  "/sys/bus/i2c/devices/1-0041/iio_device/in_power1_input"
+#define TEGRA_SYS5V_DEV  "/sys/bus/i2c/devices/1-0041/iio_device/in_power2_input"
 
 #define TEGRA_NAME_LEN      5
 #define TEGRA_FILENAME_LEN 255

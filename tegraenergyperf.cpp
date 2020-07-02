@@ -58,7 +58,7 @@ struct ProgArgs
 	ProgArgs(int argc, char *argv[]):
 		continuous_print_flag(false),
 		energy_delayed_product(false),
-		devices{"CPU", "GPU", "SOC", "DDR", "IN"},
+		devices{"CPU", "GPU", "SOC", "VDDRQ"},
 		interval(500),
 		runs(1),
 		delay(0),
@@ -155,10 +155,12 @@ struct Sampler
 				devices.emplace_back(TEGRA_GPU_DEV, name);
 			else if (!name.compare("SOC"))
 				devices.emplace_back(TEGRA_SOC_DEV, name);
-			else if (!name.compare("DDR"))
-				devices.emplace_back(TEGRA_DDR_DEV, name);
-			else if (!name.compare("IN"))
-				devices.emplace_back(TEGRA_IN_DEV, name);
+			else if (!name.compare("VDDRQ"))
+				devices.emplace_back(TEGRA_VDDRQ_DEV, name);
+			else if (!name.compare("SYS5V"))
+				devices.emplace_back(TEGRA_SYS5V_DEV, name);
+			else if (!name.compare("CV"))
+				devices.emplace_back(TEGRA_CV_DEV, name);
 			else
 				std::runtime_error("Unknown device \"" + name + "\"");
 		}
