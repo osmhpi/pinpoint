@@ -59,9 +59,9 @@ struct ProgArgs
 		continuous_print_flag(false),
 		energy_delayed_product(false),
 		devices{"CPU", "GPU", "SOC", "DDR", "IN"},
-		interval(500),
 		runs(1),
 		delay(0),
+		interval(500),
 		before(0),
 		after(0),
 		workload_and_args(nullptr)
@@ -235,7 +235,7 @@ private:
 		size_t pos = 0;
 		size_t nbytes;
 		for (auto & dev: devices) {
-			nbytes = dev.raw_read(buf + pos, avail);
+			nbytes = dev.read_string(buf + pos, avail);
 			pos += nbytes;
 			avail -= nbytes;
 			buf[pos - 1] = ',';
@@ -265,7 +265,7 @@ public:
 
 	void run()
 	{
-		for (int i = 0; i < m_args.runs; i++) {
+		for (unsigned int i = 0; i < m_args.runs; i++) {
 			if (m_args.continuous_print_flag && m_args.runs > 1)
 				std::cout << "### Run " << i << std::endl;
 			m_results.push_back(run_single());
@@ -294,7 +294,7 @@ public:
 		std::vector<double> means(m_args.devices.size(), 0);
 		double mean_time = 0;
 		for (const auto & res: m_results) {
-			for (int i = 0; i < means.size(); i++) {
+			for (size_t i = 0; i < means.size(); i++) {
 				means[i] += calcResult(res, i) / m_args.runs;
 			}
 			mean_time += res.workload_wall_time.count() / m_args.runs;
@@ -303,7 +303,7 @@ public:
 		std::vector<double> variances(m_args.devices.size(), 0);
 		double variance_time = 0;
 		for (const auto & res: m_results) {
-			for (int i = 0; i < variances.size(); i++) {
+			for (size_t i = 0; i < variances.size(); i++) {
 				double vi = calcResult(res, i) - means[i];
 				variances[i] += vi * vi / m_args.runs;
 			}
@@ -313,12 +313,12 @@ public:
 		}
 
 		std::vector<double> stddev_percents(m_args.devices.size(), 0);
-		for (int i = 0; i < stddev_percents.size(); i++) {
+		for (size_t i = 0; i < stddev_percents.size(); i++) {
 			stddev_percents[i] = (std::sqrt(variances[i]) / means[i]) * 100;
 		}
 		double stddev_percent_time = (std::sqrt(variance_time) / mean_time) * 100;
 
-		for (int i = 0; i < means.size(); i++) {
+		for (size_t i = 0; i < means.size(); i++) {
 			std::cerr << "\t"
 				<< std::fixed << std::setprecision(2)
 				<< means[i] << " " << m_args.unit << "\t"
