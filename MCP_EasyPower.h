@@ -1,6 +1,6 @@
 #pragma once
 
-#include <PowerDataSource.h>
+#include "PowerDataSource.h"
 
 #include <cstdlib>
 #include <unistd.h>
