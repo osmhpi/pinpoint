@@ -1,4 +1,5 @@
 #include "TegraDeviceInfo.h"
+#include "MCP_EasyPower.h"
 
 #include <algorithm>
 #include <atomic>
@@ -58,7 +59,7 @@ struct ProgArgs
 	ProgArgs(int argc, char *argv[]):
 		continuous_print_flag(false),
 		energy_delayed_product(false),
-		devices{"CPU", "GPU", "SOC", "DDR", "IN"},
+		devices{"MCP1"},
 		runs(1),
 		delay(0),
 		interval(500),
@@ -138,8 +139,8 @@ struct ProgArgs
 
 struct Sampler
 {
-	using result_t = std::vector<TegraDeviceInfo::accumulate_t>;
-	std::vector<TegraDeviceInfo> devices;
+	using result_t = std::vector<PowerDataSource::accumulate_t>;
+	std::vector<MCP_EasyPower> devices;
 
 	Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & devNames, bool continuous_print_flag = false) :
 		m_interval(interval),
@@ -149,16 +150,8 @@ struct Sampler
 		devices.reserve(devNames.size());
 
 		for (const auto & name: devNames) {
-			if (!name.compare("CPU"))
-				devices.emplace_back(TEGRA_CPU_DEV, name);
-			else if (!name.compare("GPU"))
-				devices.emplace_back(TEGRA_GPU_DEV, name);
-			else if (!name.compare("SOC"))
-				devices.emplace_back(TEGRA_SOC_DEV, name);
-			else if (!name.compare("DDR"))
-				devices.emplace_back(TEGRA_DDR_DEV, name);
-			else if (!name.compare("IN"))
-				devices.emplace_back(TEGRA_IN_DEV, name);
+			if (!name.compare("MCP1"))
+				devices.emplace_back("/dev/ttyACM0");
 			else
 				std::runtime_error("Unknown device \"" + name + "\"");
 		}
@@ -166,6 +159,7 @@ struct Sampler
 		std::function<void()> atick  = [this]{accumulate_tick();};
 		std::function<void()> cptick = [this]{continuous_print_tick();};
 
+		std::cout << continuous_print_flag << std::endl;
 		m_worker = std::thread([this, continuous_print_flag, &atick, &cptick]{ run(
 			continuous_print_flag ? cptick : atick
 		); });
@@ -188,7 +182,7 @@ struct Sampler
 
 		result_t result;
 		std::transform(devices.cbegin(), devices.cend(),
-			std::back_inserter(result), [](const TegraDeviceInfo & tdi) { return tdi.accumulator(); });
+			std::back_inserter(result), [](const PowerDataSource & tdi) { return tdi.accumulator(); });
 		return result;
 	}
 
@@ -278,7 +272,7 @@ public:
 		if (m_args.continuous_print_flag)
 			return;
 	
-		std::cerr << "Tegra energy counter stats for '";
+		std::cerr << "Energy counter stats for '";
 		for (char **a = m_args.workload_and_args; a && *a; ++a) {
 			std::cerr << *a << " ";
 		}
@@ -380,7 +374,7 @@ private:
 		//   * accumulate_t contains sum of milli-Watt measurements
 		//   * we take lower Darboux integral ... :( [since we measure at start of interval]
 		
-		TegraDeviceInfo::accumulate_t power_sum_mW = res.samples[sample_index];
+		PowerDataSource::accumulate_t power_sum_mW = res.samples[sample_index];
 		double energy_mJ = (double) power_sum_mW * std::chrono::duration_cast<sec_double>(m_args.interval).count();
 		double edp_mJs = energy_mJ * std::chrono::duration_cast<sec_double>(res.workload_wall_time).count();
 

@@ -3,6 +3,7 @@
 #include "PowerDataSource.h"
 
 #include <cstdlib>
+#include <stdexcept>
 #include <unistd.h>
 
 extern "C" {
@@ -14,9 +15,12 @@ class MCP_EasyPower: public PowerDataSource
 public:
 	using accumulate_t = int;
 
-	MCP_EasyPower(const std::string & filename)
+	MCP_EasyPower(const std::string & filename) :
+		PowerDataSource()
 	{
-		m_fd = f511_init(filename.c_str());
+		if (!(m_fd = f511_init(filename.c_str())))
+			std::runtime_error("Cannot open " + filename);
+
 	}
 
 	virtual ~MCP_EasyPower()
@@ -36,9 +40,9 @@ public:
 		return ch1 * 10; // MCP returns data in 10mW steps
 	}
 
-	virtual int raw_read(char *buf, size_t buflen)
+	virtual int read_string(char *buf, size_t buflen)
 	{
-		return snprintf(buf, buflen, "%d", read());
+		return snprintf(buf, buflen, "%d\n", read());
 	}
 
 private:

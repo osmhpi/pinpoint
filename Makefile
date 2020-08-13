@@ -15,7 +15,7 @@ all: $(TARGETS)
 
 osmtegrastats: osmtegrastats.o tegra_device_info.o
 
-pinpoint: pinpoint.o tegra_device_info.o
+pinpoint: pinpoint.o tegra_device_info.o mcp_com.o
 	$(LINK.cc) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
 %.d: %.c
