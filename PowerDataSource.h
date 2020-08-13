@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 class PowerDataSource
 {
@@ -40,3 +41,5 @@ public:
 protected:
 	accumulate_t m_acc;
 };
+
+typedef std::shared_ptr<PowerDataSource> PowerDataSourcePtr;

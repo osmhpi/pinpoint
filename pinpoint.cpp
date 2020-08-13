@@ -140,7 +140,7 @@ struct ProgArgs
 struct Sampler
 {
 	using result_t = std::vector<PowerDataSource::accumulate_t>;
-	std::vector<MCP_EasyPower> devices;
+	std::vector<PowerDataSourcePtr> devices;
 
 	Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & devNames, bool continuous_print_flag = false) :
 		m_interval(interval),
@@ -151,7 +151,17 @@ struct Sampler
 
 		for (const auto & name: devNames) {
 			if (!name.compare("MCP1"))
-				devices.emplace_back("/dev/ttyACM0");
+				devices.emplace_back(new MCP_EasyPower("/dev/ttyACM0"));
+			else if (!name.compare("CPU"))
+				devices.emplace_back(new TegraDeviceInfo(TEGRA_CPU_DEV, name));
+			else if (!name.compare("GPU"))
+				devices.emplace_back(new TegraDeviceInfo(TEGRA_GPU_DEV, name));
+			else if (!name.compare("SOC"))
+				devices.emplace_back(new TegraDeviceInfo(TEGRA_SOC_DEV, name));
+			else if (!name.compare("DDR"))
+				devices.emplace_back(new TegraDeviceInfo(TEGRA_DDR_DEV, name));
+			else if (!name.compare("IN"))
+				devices.emplace_back(new TegraDeviceInfo(TEGRA_IN_DEV, name));
 			else
 				std::runtime_error("Unknown device \"" + name + "\"");
 		}
@@ -159,7 +169,6 @@ struct Sampler
 		std::function<void()> atick  = [this]{accumulate_tick();};
 		std::function<void()> cptick = [this]{continuous_print_tick();};
 
-		std::cout << continuous_print_flag << std::endl;
 		m_worker = std::thread([this, continuous_print_flag, &atick, &cptick]{ run(
 			continuous_print_flag ? cptick : atick
 		); });
@@ -182,7 +191,7 @@ struct Sampler
 
 		result_t result;
 		std::transform(devices.cbegin(), devices.cend(),
-			std::back_inserter(result), [](const PowerDataSource & tdi) { return tdi.accumulator(); });
+			std::back_inserter(result), [](const PowerDataSourcePtr & tdi) { return tdi->accumulator(); });
 		return result;
 	}
 
@@ -218,7 +227,7 @@ private:
 	void accumulate_tick()
 	{
 		for (auto & dev: devices) {
-			dev.accumulate();
+			dev->accumulate();
 		}
 	}
 
@@ -229,7 +238,7 @@ private:
 		size_t pos = 0;
 		size_t nbytes;
 		for (auto & dev: devices) {
-			nbytes = dev.read_string(buf + pos, avail);
+			nbytes = dev->read_string(buf + pos, avail);
 			pos += nbytes;
 			avail -= nbytes;
 			buf[pos - 1] = ',';
