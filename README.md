@@ -1,20 +1,6 @@
 # PinPoint
 
-Tools for energy measurements, initially on Nvidia's Tegra X2 boards.
-Currently extended to integrate more data sources.
-
-## osmtegrastats
-
-Small codebase, easy to adapt. Use for a long running, full system-history of power samples. Output can be logged or off-loaded via network.
-
-Calling `osmtegrastats` is equivalent to 
-
-	tegrastats --interval 500 | while read a; do echo "$a" | awk -F "[/ ]" '{OFS=","}{print "CPU:" $38, "GPU:"$26, "SOC:"$29, "DDR:"$41, "IN:" $35}'; done
-
-
-## pinpoint
-
-More sophisticated tool, for programm profiling. Use if you want to start/stop your measurements with your program.
+Tool for energy profiling, initially on Nvidia's Tegra X2 boards. Use if you want to start/stop your measurements with your program.
 
 The inferface is to some extent inspired by `perf stat`.
 
@@ -83,7 +69,7 @@ You could compute the EDP manually from `pinpoint`'s output, or let it compute a
 
 #### Continuously Print Power Levels
 
-You can mimic the behavior of `osmtegrastats` by passing `-c`, just with the added benefits of automatic start/stop of measurements with your workload and timed trimming and delay features. If multiple runs are specified, a seperator line will be included.
+You can mimic the behavior of our older `osmtegrastats` by passing `-c`, just with the added benefits of automatic start/stop of measurements with your workload and timed trimming and delay features. If multiple runs are specified, a seperator line will be included.
 
 	$ pinpoint -c -r 2 -e CPU,DDR -- ./heatmap 1000 1000 500 random.csv
 	### Run 0

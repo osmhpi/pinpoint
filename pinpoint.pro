@@ -3,7 +3,7 @@ CONFIG += c++11
 CONFIG -= app_bundle
 
 SOURCES += \
-	tegraenergyperf.cpp \
+	pinpoint.cpp \
 	tegra_device_info.c \
 	mcp_com.c
 

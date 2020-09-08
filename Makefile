@@ -9,11 +9,9 @@ CFLAGS = -O3
 CXXFLAGS = $(CFLAGS) -std=c++11
 LOADLIBES = -lpthread
 
-TARGETS = osmtegrastats pinpoint
+TARGETS = pinpoint
 
 all: $(TARGETS)
-
-osmtegrastats: osmtegrastats.o tegra_device_info.o
 
 pinpoint: pinpoint.o tegra_device_info.o mcp_com.o
 	$(LINK.cc) $^ $(LOADLIBES) $(LDLIBS) -o $@
