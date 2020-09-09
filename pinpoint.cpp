@@ -144,6 +144,7 @@ struct Sampler
 
 	Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & devNames, bool continuous_print_flag = false) :
 		m_interval(interval),
+		m_startable(false),
 		m_done(false),
 		m_ticks(0)
 	{
@@ -169,7 +170,7 @@ struct Sampler
 		std::function<void()> atick  = [this]{accumulate_tick();};
 		std::function<void()> cptick = [this]{continuous_print_tick();};
 
-		m_worker = std::thread([this, continuous_print_flag, &atick, &cptick]{ run(
+		m_worker = std::thread([this, continuous_print_flag, atick, cptick]{ run(
 			continuous_print_flag ? cptick : atick
 		); });
 	}
@@ -177,16 +178,17 @@ struct Sampler
 	void start(std::chrono::milliseconds delay = std::chrono::milliseconds(0))
 	{
 		std::this_thread::sleep_for(delay);
+		m_startable = true;
 		m_start_signal.notify_one();
 	}
 
 	result_t stop(std::chrono::milliseconds delay = std::chrono::milliseconds(0))
 	{
 		std::this_thread::sleep_for(delay);
-		m_done.store(true);
+		m_done = true;
 
 		// Finish loop in case we didn't start
-		m_start_signal.notify_one();
+		start();
 		m_worker.join();
 
 		result_t result;
@@ -207,13 +209,14 @@ private:
 	std::condition_variable m_start_signal;
 	std::mutex m_start_mutex;
 
+	std::atomic<bool> m_startable;
 	std::atomic<bool> m_done;
 	long m_ticks;
 
 	void run(std::function<void()> tick)
 	{
 		std::unique_lock<std::mutex> lk(m_start_mutex);
-		m_start_signal.wait(lk);
+		m_start_signal.wait(lk, [this]{ return m_startable.load(); });
 
 		while (!m_done.load()) {
 			// FIXME: tiny skid by scheduling + now(). Global start instead?
