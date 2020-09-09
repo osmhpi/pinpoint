@@ -1,5 +1,5 @@
-#include "TegraDeviceInfo.h"
-#include "MCP_EasyPower.h"
+#include "data_sources/MCP_EasyPower.h"
+#include "data_sources/TegraDeviceInfo.h"
 
 #include <algorithm>
 #include <atomic>

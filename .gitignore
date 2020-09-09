@@ -1,9 +1,7 @@
-.*.swp
-.*.swo
-*.o
 *.d
-osmtegrastats
-tegraenergyperf
-pinpoint
+*.o
 *.user
-energyperf
+.*.swo
+.*.swp
+build/
+build-*/
