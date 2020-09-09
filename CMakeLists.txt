@@ -11,7 +11,6 @@ find_package(Threads)
 add_executable(pinpoint 
 	src/main.cpp
 	src/data_sources/mcp_com.c
-	src/data_sources/tegra_device_info.c
 )
 
 target_link_libraries(pinpoint ${CMAKE_THREAD_LIBS_INIT})

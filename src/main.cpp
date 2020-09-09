@@ -1,5 +1,5 @@
 #include "data_sources/MCP_EasyPower.h"
-#include "data_sources/TegraDeviceInfo.h"
+#include "data_sources/JetsonCounter.h"
 
 #include <algorithm>
 #include <atomic>
@@ -154,15 +154,15 @@ struct Sampler
 			if (!name.compare("MCP1"))
 				devices.emplace_back(new MCP_EasyPower("/dev/ttyACM0"));
 			else if (!name.compare("CPU"))
-				devices.emplace_back(new TegraDeviceInfo(TEGRA_CPU_DEV, name));
+				devices.emplace_back(new JetsonCounter(TEGRA_CPU_DEV, name));
 			else if (!name.compare("GPU"))
-				devices.emplace_back(new TegraDeviceInfo(TEGRA_GPU_DEV, name));
+				devices.emplace_back(new JetsonCounter(TEGRA_GPU_DEV, name));
 			else if (!name.compare("SOC"))
-				devices.emplace_back(new TegraDeviceInfo(TEGRA_SOC_DEV, name));
+				devices.emplace_back(new JetsonCounter(TEGRA_SOC_DEV, name));
 			else if (!name.compare("DDR"))
-				devices.emplace_back(new TegraDeviceInfo(TEGRA_DDR_DEV, name));
+				devices.emplace_back(new JetsonCounter(TEGRA_DDR_DEV, name));
 			else if (!name.compare("IN"))
-				devices.emplace_back(new TegraDeviceInfo(TEGRA_IN_DEV, name));
+				devices.emplace_back(new JetsonCounter(TEGRA_IN_DEV, name));
 			else
 				std::runtime_error("Unknown device \"" + name + "\"");
 		}
