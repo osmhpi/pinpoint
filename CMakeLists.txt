@@ -9,9 +9,10 @@ include_directories(src)
 find_package(Threads)
 
 add_executable(pinpoint 
-	src/main.cpp
+	src/Experiment.cpp
 	src/Sampler.cpp
 	src/data_sources/mcp_com.c
+	src/main.cpp
 )
 
 target_link_libraries(pinpoint ${CMAKE_THREAD_LIBS_INIT})
