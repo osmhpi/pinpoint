@@ -1,16 +1,10 @@
-#include "data_sources/MCP_EasyPower.h"
-#include "data_sources/JetsonCounter.h"
+#include "Sampler.h"
 
-#include <algorithm>
-#include <atomic>
 #include <chrono>
 #include <cmath>
-#include <condition_variable>
-#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
-#include <mutex>
 #include <sstream>
 #include <thread>
 #include <vector>
@@ -137,119 +131,7 @@ struct ProgArgs
 
 /**********************************************************/
 
-struct Sampler
-{
-	using result_t = std::vector<PowerDataSource::accumulate_t>;
-	std::vector<PowerDataSourcePtr> devices;
 
-	Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & devNames, bool continuous_print_flag = false) :
-		m_interval(interval),
-		m_startable(false),
-		m_done(false),
-		m_ticks(0)
-	{
-		devices.reserve(devNames.size());
-
-		for (const auto & name: devNames) {
-			if (!name.compare("MCP1"))
-				devices.emplace_back(new MCP_EasyPower("/dev/ttyACM0"));
-			else if (!name.compare("CPU"))
-				devices.emplace_back(new JetsonCounter(TEGRA_CPU_DEV, name));
-			else if (!name.compare("GPU"))
-				devices.emplace_back(new JetsonCounter(TEGRA_GPU_DEV, name));
-			else if (!name.compare("SOC"))
-				devices.emplace_back(new JetsonCounter(TEGRA_SOC_DEV, name));
-			else if (!name.compare("DDR"))
-				devices.emplace_back(new JetsonCounter(TEGRA_DDR_DEV, name));
-			else if (!name.compare("IN"))
-				devices.emplace_back(new JetsonCounter(TEGRA_IN_DEV, name));
-			else
-				std::runtime_error("Unknown device \"" + name + "\"");
-		}
-
-		std::function<void()> atick  = [this]{accumulate_tick();};
-		std::function<void()> cptick = [this]{continuous_print_tick();};
-
-		m_worker = std::thread([this, continuous_print_flag, atick, cptick]{ run(
-			continuous_print_flag ? cptick : atick
-		); });
-	}
-
-	void start(std::chrono::milliseconds delay = std::chrono::milliseconds(0))
-	{
-		std::this_thread::sleep_for(delay);
-		m_startable = true;
-		m_start_signal.notify_one();
-	}
-
-	result_t stop(std::chrono::milliseconds delay = std::chrono::milliseconds(0))
-	{
-		std::this_thread::sleep_for(delay);
-		m_done = true;
-
-		// Finish loop in case we didn't start
-		start();
-		m_worker.join();
-
-		result_t result;
-		std::transform(devices.cbegin(), devices.cend(),
-			std::back_inserter(result), [](const PowerDataSourcePtr & tdi) { return tdi->accumulator(); });
-		return result;
-	}
-
-	long ticks() const
-	{
-		return m_ticks;
-	}
-
-private:
-	std::chrono::milliseconds m_interval;
-	std::thread m_worker;
-
-	std::condition_variable m_start_signal;
-	std::mutex m_start_mutex;
-
-	std::atomic<bool> m_startable;
-	std::atomic<bool> m_done;
-	long m_ticks;
-
-	void run(std::function<void()> tick)
-	{
-		std::unique_lock<std::mutex> lk(m_start_mutex);
-		m_start_signal.wait(lk, [this]{ return m_startable.load(); });
-
-		while (!m_done.load()) {
-			// FIXME: tiny skid by scheduling + now(). Global start instead?
-			auto entry = std::chrono::high_resolution_clock::now();
-			tick();
-			m_ticks++;
-			std::this_thread::sleep_until(entry + m_interval);
-		}
-	}
-
-	void accumulate_tick()
-	{
-		for (auto & dev: devices) {
-			dev->accumulate();
-		}
-	}
-
-	void continuous_print_tick()
-	{
-		static char buf[255];
-		size_t avail = sizeof(buf);
-		size_t pos = 0;
-		size_t nbytes;
-		for (auto & dev: devices) {
-			nbytes = dev->read_string(buf + pos, avail);
-			pos += nbytes;
-			avail -= nbytes;
-			buf[pos - 1] = ',';
-		}
-		buf[pos - 1] = '\0';
-		puts(buf);
-	}
-};
 
 /**********************************************************/
 

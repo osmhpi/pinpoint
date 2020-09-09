@@ -10,6 +10,7 @@ find_package(Threads)
 
 add_executable(pinpoint 
 	src/main.cpp
+	src/Sampler.cpp
 	src/data_sources/mcp_com.c
 )
 
