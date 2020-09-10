@@ -11,6 +11,8 @@ find_package(Threads)
 add_executable(pinpoint 
 	src/Experiment.cpp
 	src/Sampler.cpp
+	src/Registry.cpp
+	src/data_sources/JetsonCounter.cpp
 	src/data_sources/mcp_com.c
 	src/main.cpp
 )

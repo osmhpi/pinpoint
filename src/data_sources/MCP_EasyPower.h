@@ -15,6 +15,22 @@ class MCP_EasyPower: public PowerDataSource
 public:
 	using accumulate_t = int;
 
+	static std::string sourceName()
+	{
+		return "mcp";
+	}
+
+	static std::vector<std::string> detectAvailableCounters()
+	{
+		return std::vector<std::string>();
+	}
+
+	static PowerDataSourcePtr openCounter(const std::string & counterName)
+	{
+		(void)counterName;
+		return PowerDataSourcePtr(nullptr);
+	}
+
 	MCP_EasyPower(const std::string & filename) :
 		PowerDataSource()
 	{
@@ -28,7 +44,7 @@ public:
 		close(m_fd);
 	}
 
-	virtual const std::string name() const
+	virtual const std::string counterName() const
 	{
 		return "MCP1";
 	}

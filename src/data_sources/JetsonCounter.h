@@ -15,6 +15,19 @@
 class JetsonCounter: public PowerDataSource
 {
 public:
+	static std::string sourceName()
+	{
+		return "jetson";
+	}
+
+	static std::vector<std::string> detectAvailableCounters();
+
+	static PowerDataSourcePtr openCounter(const std::string & counterName)
+	{
+		(void)counterName;
+		return PowerDataSourcePtr(nullptr);
+	}
+
 	JetsonCounter(const std::string & filename, const std::string & name = "UNDEF"):
 		PowerDataSource(),
 		m_filename(filename),
@@ -30,7 +43,7 @@ public:
 		fclose(m_fp);
 	}
 
-	virtual const std::string name() const
+	virtual const std::string counterName() const
 	{
 		return m_name;
 	}
