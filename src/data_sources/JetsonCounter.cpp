@@ -22,8 +22,8 @@ static void test_iio_device(const std::string & path, const std::string & counte
 		return;
 
 	std::string railName;
-	railNameFile >> railName;
-	railNameToFileName.at(railName) = powerFileName;
+	std::getline(railNameFile, railName);
+	railNameToFileName[railName] = powerFileName;
 }
 
 static void searchFolder(const std::string & path)
@@ -33,12 +33,12 @@ static void searchFolder(const std::string & path)
 		return;
 
 	std::string deviceName;
-	deviceNameFile >> deviceName;
+	std::getline(deviceNameFile, deviceName);
 
-	if (!deviceName.compare("ina3221x"))
+	if (deviceName.compare("ina3221x") != 0)
 		return;
 
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i <= 2; i++) {
 		test_iio_device(path, std::to_string(i));
 	}
 }
@@ -46,12 +46,14 @@ static void searchFolder(const std::string & path)
 std::vector<std::string> JetsonCounter::detectAvailableCounters()
 {
 	std::vector<std::string> result;
+	railNameToFileName.clear();
 
 	for (const auto & path: searchPaths)
 		searchFolder(path);
 
+
 	for (const auto & imap: railNameToFileName) {
-		result.push_back(imap.first);
+		result.emplace_back(imap.first);
 	}
 	return result;
 }

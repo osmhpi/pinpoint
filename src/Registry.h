@@ -30,9 +30,11 @@ public:
 			return DataSourceT::openCounter(counterName);
 		};
 
-		s_sources.at(DataSourceT::sourceName()) = sourceInfo;
+		s_sources[DataSourceT::sourceName()] = sourceInfo;
 		return s_sources.size();
 	}
+
+	static std::vector<std::string> availableCounters();
 
 	static void setup();
 

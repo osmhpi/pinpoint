@@ -5,8 +5,8 @@
 int main(int argc, char *argv[])
 {
 	ProgArgs args(argc, argv);
-
 	Registry::setup();
+
 	Experiment experiment(args);
 
 	experiment.run();
