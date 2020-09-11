@@ -59,5 +59,5 @@ std::vector<std::string> JetsonCounter::detectAvailableCounters()
 
 PowerDataSourcePtr JetsonCounter::openCounter(const std::string & counterName)
 {
-	return PowerDataSourcePtr(new JetsonCounter(railNameToFileName.at(counterName)));
+	return PowerDataSourcePtr(new JetsonCounter(railNameToFileName.at(counterName)))	;
 }

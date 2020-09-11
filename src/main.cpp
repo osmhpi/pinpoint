@@ -9,10 +9,15 @@ int main(int argc, char *argv[])
 
 	args.validate();
 
-	Experiment experiment(args);
+	try	{
+		Experiment experiment(args);
 
-	experiment.run();
-	experiment.printResult();
+		experiment.run();
+		experiment.printResult();
+	} catch (const std::exception & e) {
+		std::cerr << "[ERROR] " << e.what() << std::endl;
+		return 1;
+	}
 
 	return 0;
 }

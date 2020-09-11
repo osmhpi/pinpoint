@@ -5,13 +5,6 @@
 #include <stdexcept>
 #include <cstdio>
 
-#define TEGRA_GPU_DEV  "/sys/bus/i2c/devices/0-0040/iio_device/in_power0_input"
-#define TEGRA_SOC_DEV  "/sys/bus/i2c/devices/0-0040/iio_device/in_power1_input"
-#define TEGRA_WIFI_DEV "/sys/bus/i2c/devices/0-0040/iio_device/in_power2_input"
-#define TEGRA_IN_DEV   "/sys/bus/i2c/devices/0-0041/iio_device/in_power0_input"
-#define TEGRA_CPU_DEV  "/sys/bus/i2c/devices/0-0041/iio_device/in_power1_input"
-#define TEGRA_DDR_DEV  "/sys/bus/i2c/devices/0-0041/iio_device/in_power2_input"
-
 class JetsonCounter: public PowerDataSource
 {
 public:
@@ -55,6 +48,6 @@ private:
 	{
 		m_fp = fopen(m_filename.c_str(), "r");
 		if (m_fp == NULL)
-			std::runtime_error("Cannot open " + m_filename);
+			throw std::runtime_error("Cannot open " + m_filename);
 	}
 };

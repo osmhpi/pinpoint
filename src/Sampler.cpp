@@ -30,7 +30,6 @@ struct SamplerDetail
 	}
 };
 
-
 Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & devNames, bool continuous_print_flag) :
 	m_detail(new SamplerDetail(interval))
 {
@@ -39,7 +38,7 @@ Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::stri
 	for (const auto & name: devNames) {
 		PowerDataSourcePtr counter = Registry::openCounter(name);
 		if (!counter) {
-			std::runtime_error("Unknown counter \"" + name + "\"");
+			throw std::runtime_error("Unknown counter \"" + name + "\"");
 		}
 		devices.push_back(counter);
 	}

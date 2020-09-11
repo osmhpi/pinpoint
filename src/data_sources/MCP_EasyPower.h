@@ -35,7 +35,7 @@ public:
 		PowerDataSource()
 	{
 		if (!(m_fd = f511_init(filename.c_str())))
-			std::runtime_error("Cannot open " + filename);
+			throw std::runtime_error("Cannot open " + filename);
 
 	}
 

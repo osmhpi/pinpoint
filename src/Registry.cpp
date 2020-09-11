@@ -27,8 +27,6 @@ std::vector<std::string> Registry::availableCounters()
 
 PowerDataSourcePtr Registry::openCounter(const std::string & name)
 {
-	// TODO: Add Aliases
-
 	std::string sourceName = name.substr(0, name.find(":"));
 	std::string counterName = name.substr(name.find(":") + 1, name.size());
 
@@ -40,7 +38,7 @@ PowerDataSourcePtr Registry::openCounter(const std::string & name)
 	if (std::find(sourceAvailableCounters.begin(), sourceAvailableCounters.end(), counterName) == sourceAvailableCounters.end())
 		return nullptr;
 
-	PowerDataSourcePtr dataSource = s_sources[sourceName].openCounter(sourceName);
+	PowerDataSourcePtr dataSource = s_sources[sourceName].openCounter(counterName);
 	dataSource->setName(name);
 	return dataSource;
 }
