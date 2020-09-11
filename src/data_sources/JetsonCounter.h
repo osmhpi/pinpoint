@@ -21,31 +21,11 @@ public:
 	}
 
 	static std::vector<std::string> detectAvailableCounters();
-
-	static PowerDataSourcePtr openCounter(const std::string & counterName)
-	{
-		(void)counterName;
-		return PowerDataSourcePtr(nullptr);
-	}
-
-	JetsonCounter(const std::string & filename, const std::string & name = "UNDEF"):
-		PowerDataSource(),
-		m_filename(filename),
-		m_name(name)
-	{
-		m_fp = fopen(m_filename.c_str(), "r");
-		if (m_fp == NULL)
-			std::runtime_error("Cannot open " + m_filename);
-	}
+	static PowerDataSourcePtr openCounter(const std::string & counterName);
 
 	virtual ~JetsonCounter()
 	{
 		fclose(m_fp);
-	}
-
-	virtual const std::string counterName() const
-	{
-		return m_name;
 	}
 
 	virtual int read_string(char *buf, size_t buflen)
@@ -67,6 +47,14 @@ public:
 
 private:
 	std::string m_filename;
-	std::string m_name;
 	FILE *m_fp;
+
+	JetsonCounter(const std::string & filename) :
+		PowerDataSource(),
+		m_filename(filename)
+	{
+		m_fp = fopen(m_filename.c_str(), "r");
+		if (m_fp == NULL)
+			std::runtime_error("Cannot open " + m_filename);
+	}
 };

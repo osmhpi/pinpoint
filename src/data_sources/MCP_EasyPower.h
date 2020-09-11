@@ -44,11 +44,6 @@ public:
 		close(m_fd);
 	}
 
-	virtual const std::string counterName() const
-	{
-		return "MCP1";
-	}
-
 	virtual int read()
 	{
 		int ch1, ch2;

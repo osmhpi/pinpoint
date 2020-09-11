@@ -21,6 +21,8 @@ public:
 		}
 	};
 
+	static void setup();
+
 	template<typename DataSourceT>
 	static int registerSource()
 	{
@@ -35,8 +37,7 @@ public:
 	}
 
 	static std::vector<std::string> availableCounters();
-
-	static void setup();
+	static PowerDataSourcePtr openCounter(const std::string & name);
 
 private:
 	static std::map<std::string,SourceInfo> s_sources;

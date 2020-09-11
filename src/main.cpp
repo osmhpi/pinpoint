@@ -7,6 +7,8 @@ int main(int argc, char *argv[])
 	ProgArgs args(argc, argv);
 	Registry::setup();
 
+	args.validate();
+
 	Experiment experiment(args);
 
 	experiment.run();

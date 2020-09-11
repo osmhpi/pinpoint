@@ -17,7 +17,6 @@ public:
 	// static std::vector<std::string> detectAvailableCounters();
 	// static PowerDataSourcePtr openCounter(const std::string & counterName);
 
-	virtual const std::string counterName() const = 0;
 	virtual int read() = 0;
 	virtual int read_string(char *buf, size_t buflen) = 0;
 
@@ -47,6 +46,19 @@ public:
 		return m_acc;
 	}
 
+	std::string name() const
+	{
+		return m_name;
+	}
+
+	void setName(const std::string & name)
+	{
+		m_name = name;
+	}
+
 protected:
 	accumulate_t m_acc;
+
+private:
+	std::string m_name;
 };

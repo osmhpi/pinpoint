@@ -51,9 +51,13 @@ std::vector<std::string> JetsonCounter::detectAvailableCounters()
 	for (const auto & path: searchPaths)
 		searchFolder(path);
 
-
 	for (const auto & imap: railNameToFileName) {
 		result.emplace_back(imap.first);
 	}
 	return result;
+}
+
+PowerDataSourcePtr JetsonCounter::openCounter(const std::string & counterName)
+{
+	return PowerDataSourcePtr(new JetsonCounter(railNameToFileName.at(counterName)));
 }

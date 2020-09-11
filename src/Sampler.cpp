@@ -1,4 +1,5 @@
 #include "Sampler.h"
+#include "Registry.h"
 
 #include <algorithm>
 #include <atomic>
@@ -36,20 +37,11 @@ Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::stri
 	devices.reserve(devNames.size());
 
 	for (const auto & name: devNames) {
-		if (!name.compare("MCP1"))
-			devices.emplace_back(new MCP_EasyPower("/dev/ttyACM0"));
-		else if (!name.compare("CPU"))
-			devices.emplace_back(new JetsonCounter(TEGRA_CPU_DEV, name));
-		else if (!name.compare("GPU"))
-			devices.emplace_back(new JetsonCounter(TEGRA_GPU_DEV, name));
-		else if (!name.compare("SOC"))
-			devices.emplace_back(new JetsonCounter(TEGRA_SOC_DEV, name));
-		else if (!name.compare("DDR"))
-			devices.emplace_back(new JetsonCounter(TEGRA_DDR_DEV, name));
-		else if (!name.compare("IN"))
-			devices.emplace_back(new JetsonCounter(TEGRA_IN_DEV, name));
-		else
-			std::runtime_error("Unknown device \"" + name + "\"");
+		PowerDataSourcePtr counter = Registry::openCounter(name);
+		if (!counter) {
+			std::runtime_error("Unknown counter \"" + name + "\"");
+		}
+		devices.push_back(counter);
 	}
 
 	std::function<void()> atick  = [this]{accumulate_tick();};
