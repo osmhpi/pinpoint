@@ -2,6 +2,7 @@
 
 #include "Registry.h"
 
+#include <array>
 #include <cstdlib>
 #include <dirent.h>
 #include <fstream>
