@@ -28,5 +28,5 @@ public:
 private:
 	struct MCP_EasyPowerDetail *m_detail;
 
-	MCP_EasyPower(const std::string & filename, const unsigned int channel);
+	MCP_EasyPower(const unsigned int dev, const unsigned int channel);
 };
