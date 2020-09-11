@@ -2,14 +2,6 @@
 
 #include "PowerDataSource.h"
 
-#include <cstdlib>
-#include <stdexcept>
-#include <unistd.h>
-
-extern "C" {
-	#include "mcp_com.h"
-}
-
 struct MCP_EasyPowerDetail;
 
 class MCP_EasyPower: public PowerDataSource

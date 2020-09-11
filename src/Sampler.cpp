@@ -30,18 +30,12 @@ struct SamplerDetail
 	}
 };
 
-Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & countersOrAliases, bool continuous_print_flag) :
+Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & counterOrAliasNames, bool continuous_print_flag) :
 	m_detail(new SamplerDetail(interval))
 {
-	// If no counter selected (default), open them all
-	const std::vector<std::string> counterNames = countersOrAliases.empty() ? Registry::availableCounters() : countersOrAliases;
-	if (counters.empty()) {
-		throw std::runtime_error("No counters available on this system.");
-	}
+	counters.reserve(counterOrAliasNames.size());
 
-	counters.reserve(counterNames.size());
-
-	for (const auto & name: counterNames) {
+	for (const auto & name: counterOrAliasNames) {
 		PowerDataSourcePtr counter = Registry::openCounter(name);
 		if (!counter) {
 			throw std::runtime_error("Unknown counter \"" + name + "\"");

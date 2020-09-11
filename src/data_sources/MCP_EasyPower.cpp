@@ -2,9 +2,15 @@
 
 #include "Registry.h"
 
+#include <cstdlib>
 #include <fstream>
 #include <dirent.h>
 #include <memory>
+#include <unistd.h>
+
+extern "C" {
+	#include "mcp_com.h"
+}
 
 #define MCP_USB_VENDOR_ID  0x04d8
 #define MCP_USB_PRODUCT_ID 0x00dd
@@ -13,6 +19,12 @@ struct MCP_EasyPowerDetail
 {
 	int fd;
 	unsigned int channel;
+
+	MCP_EasyPowerDetail() :
+		fd(-1)
+	{
+		;;
+	}
 };
 
 /*******************************************************************/
@@ -103,7 +115,7 @@ MCP_EasyPower::MCP_EasyPower(const std::string & filename, const unsigned int ch
 
 MCP_EasyPower::~MCP_EasyPower()
 {
-	if (m_detail->fd)
+	if (m_detail->fd >= 0)
 		close(m_detail->fd);
 	delete m_detail;
 }

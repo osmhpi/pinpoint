@@ -38,7 +38,7 @@ struct ProgArgs
 	bool energy_delayed_product;
 	bool print_counter_list;
 
-	std::vector<std::string> devices;
+	std::vector<std::string> counters;
 	unsigned int runs;
 	std::chrono::milliseconds delay;
 	std::chrono::milliseconds interval;
@@ -74,7 +74,7 @@ struct ProgArgs
 				    energy_delayed_product = true;
 				    break;
 			    case 'e':
-				    devices = str_split<','>(optarg);
+					counters = str_split<','>(optarg);
 				    break;
 			    case 'r':
 				    runs = atoi(optarg);
@@ -147,6 +147,14 @@ struct ProgArgs
 			std::cerr << "Missing workload" << std::endl;
 			exit(1);
 		}
+
+		if (counters.empty()) {
+			// If no counter selected (default), open them all
+			counters = Registry::availableCounters();
+			if (counters.empty()) {
+				std::cerr << "No counters available on this system" << std::endl;
+			}
+		 }
 	}
 
 };

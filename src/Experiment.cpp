@@ -35,7 +35,7 @@ void Experiment::printResult()
 							   << m_args.runs << "]" << std::endl;
 	std::cerr << std::endl;
 
-	std::vector<double> means(m_args.devices.size(), 0);
+	std::vector<double> means(m_args.counters.size(), 0);
 	double mean_time = 0;
 	for (const auto & res: m_results) {
 		for (size_t i = 0; i < means.size(); i++) {
@@ -44,7 +44,7 @@ void Experiment::printResult()
 		mean_time += res.workload_wall_time.count() / m_args.runs;
 	}
 
-	std::vector<double> variances(m_args.devices.size(), 0);
+	std::vector<double> variances(m_args.counters.size(), 0);
 	double variance_time = 0;
 	for (const auto & res: m_results) {
 		for (size_t i = 0; i < variances.size(); i++) {
@@ -56,7 +56,7 @@ void Experiment::printResult()
 		variance_time += vti * vti / m_args.runs;
 	}
 
-	std::vector<double> stddev_percents(m_args.devices.size(), 0);
+	std::vector<double> stddev_percents(m_args.counters.size(), 0);
 	for (size_t i = 0; i < stddev_percents.size(); i++) {
 		stddev_percents[i] = (std::sqrt(variances[i]) / means[i]) * 100;
 	}
@@ -66,7 +66,7 @@ void Experiment::printResult()
 		std::cerr << "\t"
 			<< std::fixed << std::setprecision(2)
 			<< means[i] << " " << m_args.unit << "\t"
-			<< m_args.devices[i];
+			<< m_args.counters[i];
 		if (m_args.runs > 1) std::cerr << "\t"
 			<< "( +- " << stddev_percents[i] << "% )";
 
@@ -87,7 +87,7 @@ void Experiment::printResult()
 
 Experiment::Result Experiment::run_single()
 {
-	Sampler sampler(m_args.interval, m_args.devices, m_args.continuous_print_flag);
+	Sampler sampler(m_args.interval, m_args.counters, m_args.continuous_print_flag);
 
 	if (m_args.before.count() > 0) {
 		sampler.start();
