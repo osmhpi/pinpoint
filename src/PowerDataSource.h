@@ -12,10 +12,11 @@ class PowerDataSource
 public:
 	using accumulate_t = unsigned long;
 
-	// Implement this in child classes
-	// static std::string sourceName();
-	// static std::vector<std::string> detectAvailableCounters();
-	// static PowerDataSourcePtr openCounter(const std::string & counterName);
+	// Implement this in child classes:
+	//   static std::string sourceName();
+	//   static std::vector<std::string> detectAvailableCounters();
+	//   static PowerDataSourcePtr openCounter(const std::string & counterName);
+	//   static void registerPossibleAliases();
 
 	virtual int read() = 0;
 	virtual int read_string(char *buf, size_t buflen) = 0;

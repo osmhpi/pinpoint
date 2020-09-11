@@ -31,6 +31,11 @@ public:
 		return PowerDataSourcePtr(nullptr);
 	}
 
+	static void registerPossibleAliases()
+	{
+		;;
+	}
+
 	MCP_EasyPower(const std::string & filename) :
 		PowerDataSource()
 	{

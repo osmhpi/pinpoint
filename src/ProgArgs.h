@@ -133,9 +133,14 @@ struct ProgArgs
 	void validate()
 	{
 		if (print_counter_list) {
-			std::cout << "List of available counters (to be used in -e):" << std::endl << std::endl;
-			for (const std::string & counter: Registry::availableCounters()) {
+			std::cout << "List of available counters (to be used in -e):" << std::endl;
+			for (const auto & counter: Registry::availableCounters()) {
 				std::cout << "\t" << counter << std::endl;
+			}
+
+			std::cout << std::endl << "List of available aliases:" << std::endl;
+			for (const auto & alias: Registry::availableAliases()) {
+				std::cout << "\t" << alias.first << " -> " << alias.second << std::endl;
 			}
 			exit(0);
 		}

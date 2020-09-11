@@ -1,4 +1,5 @@
 #include "JetsonCounter.h"
+#include "../Registry.h"
 
 #include <map>
 #include <fstream>
@@ -57,7 +58,30 @@ std::vector<std::string> JetsonCounter::detectAvailableCounters()
 	return result;
 }
 
+void JetsonCounter::registerPossibleAliases()
+{
+	// FIXME: I don't like the control flow, that we need to call Registry from here.
+
+	// Tegra TX2
+	Registry::registerAlias<JetsonCounter>("CPU", "VDD_SYS_CPU");
+	Registry::registerAlias<JetsonCounter>("DDR", "VDD_SYS_DDR");
+	Registry::registerAlias<JetsonCounter>("MEM", "VDD_SYS_DDR");
+	Registry::registerAlias<JetsonCounter>("GPU", "VDD_SYS_GPU");
+	Registry::registerAlias<JetsonCounter>("SOC", "VDD_SYS_SOC");
+	Registry::registerAlias<JetsonCounter>("IN",  "VDD_IN");
+	Registry::registerAlias<JetsonCounter>("WIFI", "VDD_4V0_WIFI");
+
+	// Xavier AGX
+	Registry::registerAlias<JetsonCounter>("CPU", "CPU");
+	Registry::registerAlias<JetsonCounter>("DDR", "VDDRQ");
+	Registry::registerAlias<JetsonCounter>("MEM", "VDDRQ");
+	Registry::registerAlias<JetsonCounter>("GPU", "GPU");
+	Registry::registerAlias<JetsonCounter>("SOC", "SOC");
+	Registry::registerAlias<JetsonCounter>("CV",  "CV");
+	// The SYS5V rail is nonsense, hence skipped
+}
+
 PowerDataSourcePtr JetsonCounter::openCounter(const std::string & counterName)
 {
-	return PowerDataSourcePtr(new JetsonCounter(railNameToFileName.at(counterName)))	;
+	return PowerDataSourcePtr(new JetsonCounter(railNameToFileName.at(counterName)));
 }

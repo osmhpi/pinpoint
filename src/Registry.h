@@ -3,7 +3,6 @@
 #include "PowerDataSource.h"
 
 #include <functional>
-#include <map>
 #include <string>
 #include <vector>
 
@@ -31,15 +30,25 @@ public:
 		sourceInfo.openCounter = [](const std::string & counterName){
 			return DataSourceT::openCounter(counterName);
 		};
-
-		s_sources[DataSourceT::sourceName()] = sourceInfo;
-		return s_sources.size();
+		auto res = registerSource(DataSourceT::sourceName(), sourceInfo);
+		DataSourceT::registerPossibleAliases();
+		return res;
 	}
 
+	template<typename DataSourceT>
+	static int registerAlias(const std::string & aliasName, const std::string & counterName)
+	{
+		return registerAlias(aliasName, DataSourceT::sourceName(), counterName);
+	}
+
+	static int registerAlias(const std::string & aliasName, const std::string & sourceName, const std::string & counterName);
+
 	static std::vector<std::string> availableCounters();
+	static std::vector<std::pair<std::string,std::string>> availableAliases();
 	static PowerDataSourcePtr openCounter(const std::string & name);
 
 private:
-	static std::map<std::string,SourceInfo> s_sources;
+	static int registerSource(const std::string & sourceName, const SourceInfo & sourceInfo);
+	static bool isAvailable(const std::string & sourceName, const std::string & counterName);
 
 };
