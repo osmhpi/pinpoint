@@ -13,6 +13,7 @@ add_executable(pinpoint
 	src/Sampler.cpp
 	src/Registry.cpp
 	src/data_sources/JetsonCounter.cpp
+	src/data_sources/MCP_EasyPower.cpp
 	src/data_sources/mcp_com.c
 	src/main.cpp
 )
