@@ -30,17 +30,23 @@ struct SamplerDetail
 	}
 };
 
-Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & devNames, bool continuous_print_flag) :
+Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & countersOrAliases, bool continuous_print_flag) :
 	m_detail(new SamplerDetail(interval))
 {
-	devices.reserve(devNames.size());
+	// If no counter selected (default), open them all
+	const std::vector<std::string> counterNames = countersOrAliases.empty() ? Registry::availableCounters() : countersOrAliases;
+	if (counters.empty()) {
+		throw std::runtime_error("No counters available on this system.");
+	}
 
-	for (const auto & name: devNames) {
+	counters.reserve(counterNames.size());
+
+	for (const auto & name: counterNames) {
 		PowerDataSourcePtr counter = Registry::openCounter(name);
 		if (!counter) {
 			throw std::runtime_error("Unknown counter \"" + name + "\"");
 		}
-		devices.push_back(counter);
+		counters.push_back(counter);
 	}
 
 	std::function<void()> atick  = [this]{accumulate_tick();};
@@ -78,7 +84,7 @@ Sampler::result_t Sampler::stop(std::chrono::milliseconds delay)
 	m_detail->worker.join();
 
 	result_t result;
-	std::transform(devices.cbegin(), devices.cend(),
+	std::transform(counters.cbegin(), counters.cend(),
 		std::back_inserter(result), [](const PowerDataSourcePtr & tdi) { return tdi->accumulator(); });
 	return result;
 }
@@ -99,7 +105,7 @@ void Sampler::run(std::function<void()> tick)
 
 void Sampler::accumulate_tick()
 {
-	for (auto & dev: devices) {
+	for (auto & dev: counters) {
 		dev->accumulate();
 	}
 }
@@ -110,7 +116,7 @@ void Sampler::continuous_print_tick()
 	size_t avail = sizeof(buf);
 	size_t pos = 0;
 	size_t nbytes;
-	for (auto & dev: devices) {
+	for (auto & dev: counters) {
 		nbytes = dev->read_string(buf + pos, avail);
 		pos += nbytes;
 		avail -= nbytes;

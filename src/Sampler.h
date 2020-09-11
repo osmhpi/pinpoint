@@ -12,9 +12,9 @@ struct SamplerDetail;
 struct Sampler
 {
 	using result_t = std::vector<PowerDataSource::accumulate_t>;
-	std::vector<PowerDataSourcePtr> devices;
+	std::vector<PowerDataSourcePtr> counters;
 
-	Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & devNames, bool continuous_print_flag = false);
+	Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & countersOrAliases, bool continuous_print_flag = false);
 	virtual ~Sampler();
 
 	void start(std::chrono::milliseconds delay = std::chrono::milliseconds(0));

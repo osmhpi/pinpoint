@@ -53,7 +53,6 @@ struct ProgArgs
 	    continuous_print_flag(false),
 	    energy_delayed_product(false),
 		print_counter_list(false),
-	    devices{"MCP1"},
 	    runs(1),
 	    delay(0),
 	    interval(500),
