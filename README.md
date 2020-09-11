@@ -1,11 +1,17 @@
 # PinPoint
 
-Tool for energy profiling, initially on Nvidia's Tegra X2 boards. Use if you want to start/stop your measurements with your program.
+A tool for energy profiling.
+At the moment the following platforms are supported:
 
-The inferface is to some extent inspired by `perf stat`.
+* 3-channel INA3221 on NVIDIA Jetson TX2 boards
+* 3-channel INA3221 on NVIDIA Jetson AGX Xavier boards
+* Microchip MCP39F511N (for external power measurements)
+
+The interface is to some extent inspired by `perf stat`.
 
 	Usage: pinpoint -h|[-c|-p] [-e dev1,dev2,...] ([-r|-d|-i|-b|-a] N)* [--] workload [args]
 		-h Print this help and exit
+		-l Print a list of available counters and exit
 		-c Continuously print power levels (mW) to stdout (skip energy stats)
 		-p Measure energy-delayed product (measure joules if not provided)
 		-e Comma seperated list of measured devices (default: all)
@@ -14,7 +20,11 @@ The inferface is to some extent inspired by `perf stat`.
 		-i Sampling interval in ms (default: 500)
 		-b Start measurement N ms before worker creation (negative values will delay start)
 		-a Continue measurement N ms after worker exited
-	
+
+Use this tool if you want to start/stop your measurements with your program, or test your implementation of a new data source for power measurements.
+
+While this user-space tool has no third-party dependencies, future work might move its functionality and power sources to [libpapi](https://icl.utk.edu/papi/) or create virtual [`perf`](https://perf.wiki.kernel.org) events to provide better integration with other tools.
+
 ### Examples
 
 #### Basic Example
@@ -66,6 +76,34 @@ You could compute the EDP manually from `pinpoint`'s output, or let it compute a
 
 		2.85491275 seconds time elapsed ( +- 0.10% )
 
+#### List Raw Names of Available Data Sources
+
+When called with `-l`, `pinpoint` will list all accessible data sources on the current system. Those sources are identified by a `:`-seperated tuple of the source class name and the raw counter name. As they might differ between different platforms, there also exists a list of aliases mapping human-friendly names to raw counter names.
+
+On a Jetson TX2, with directly attached MCP39F511N this might look like this:
+
+	$ pinpoint -l
+	List of available counters (to be used in -e):
+	  jetson:VDD_4V0_WIFI
+	  jetson:VDD_IN
+	  jetson:VDD_SYS_CPU
+	  jetson:VDD_SYS_DDR
+	  jetson:VDD_SYS_GPU
+	  jetson:VDD_SYS_SOC
+	  mcp:dev0ch1
+	  mcp:dev0ch2
+
+	List of available aliases:
+	  CPU -> jetson:VDD_SYS_CPU
+	  DDR -> jetson:VDD_SYS_DDR
+	  EXT_IN -> mcp:dev0ch1
+	  GPU -> jetson:VDD_SYS_GPU
+	  IN -> jetson:VDD_IN
+	  MCP1 -> mcp:dev0ch1
+	  MCP2 -> mcp:dev0ch2
+	  MEM -> jetson:VDD_SYS_DDR
+	  SOC -> jetson:VDD_SYS_SOC
+	  WIFI -> jetson:VDD_4V0_WIFI
 
 #### Continuously Print Power Levels
 
