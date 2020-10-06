@@ -1,4 +1,5 @@
 # PinPoint
+[![Build Status](https://travis-ci.org/osmhpi/pinpoint.svg?branch=master)](https://travis-ci.org/osmhpi/pinpoint)
 
 A tool for energy profiling.
 At the moment the following platforms are supported:
