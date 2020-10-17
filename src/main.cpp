@@ -4,13 +4,13 @@
 
 int main(int argc, char *argv[])
 {
-	ProgArgs args(argc, argv);
+	settings::settings.readProgArgs(argc, argv);
 	Registry::setup();
 
-	args.validate();
+	settings::settings.validate();
 
 	try	{
-		Experiment experiment(args);
+		Experiment experiment;
 
 		experiment.run();
 		experiment.printResult();

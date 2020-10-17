@@ -11,6 +11,10 @@
 
 #include <unistd.h>
 
+namespace settings {
+
+namespace detail {
+
 template<char delimiter>
 class WordDelimitedBy : public std::string
 {};
@@ -31,7 +35,9 @@ std::vector<std::string> str_split(const std::string & text)
 	          std::istream_iterator<WordDelimitedBy<delimiter>>());
 }
 
-struct ProgArgs
+} // namespace detail
+
+struct Settings
 {
 	// Configurable via command line options
 	bool continuous_print_flag;
@@ -49,69 +55,74 @@ struct ProgArgs
 	// Inferred value
 	std::string unit;
 
-	ProgArgs(int argc, char *argv[]):
-	    continuous_print_flag(false),
-	    energy_delayed_product(false),
+	Settings():
+		continuous_print_flag(false),
+		energy_delayed_product(false),
 		print_counter_list(false),
-	    runs(1),
-	    delay(0),
-	    interval(500),
-	    before(0),
-	    after(0),
-	    workload_and_args(nullptr)
+		runs(1),
+		delay(0),
+		interval(500),
+		before(0),
+		after(0),
+		workload_and_args(nullptr)
 	{
-		int c;
-		while ((c = getopt (argc, argv, "hlcpe:r:d:i:b:a:")) != -1) {
-			switch (c) {
-			    case 'h':
-			    case '?':
-				    printHelpAndExit(argv[0]);
-				    break;
-			    case 'c':
-				    continuous_print_flag = true;
-				    break;
-			    case 'p':
-				    energy_delayed_product = true;
-				    break;
-			    case 'e':
-					counters = str_split<','>(optarg);
-				    break;
-			    case 'r':
-				    runs = atoi(optarg);
-					if (runs < 1) {
-						std::cerr << "Invalid number of runs" << std::endl;
-						exit(1);
-					}
-				    break;
-			    case 'd':
-				    delay = std::chrono::milliseconds(atoi(optarg));
-				    break;
-			    case 'i':
-				    interval = std::chrono::milliseconds(atoi(optarg));
-				    break;
-			    case 'a':
-				    after = std::chrono::milliseconds(atoi(optarg));
-				    break;
-			    case 'b':
-				    before = std::chrono::milliseconds(atoi(optarg));
-				    break;
-				case 'l':
-					print_counter_list = true;
-					break;
-			    default:
-				    printHelpAndExit(argv[0], 1);
-			}
-		}
-
-		if (!(optind < argc)) {
-			workload_and_args = nullptr;
-		} else {
-			workload_and_args = &argv[optind];
-		}
-
-		/////// Infer other stuff
-		unit = energy_delayed_product ? "mJs" : "mJ";
+		;;
 	}
+
+    void readProgArgs(int argc, char *argv[])
+    {
+        int c;
+        while ((c = getopt (argc, argv, "hlcpe:r:d:i:b:a:")) != -1) {
+            switch (c) {
+                case 'h':
+                case '?':
+                    printHelpAndExit(argv[0]);
+                    break;
+                case 'c':
+                    continuous_print_flag = true;
+                    break;
+                case 'p':
+                    energy_delayed_product = true;
+                    break;
+                case 'e':
+                    counters = detail::str_split<','>(optarg);
+                    break;
+                case 'r':
+                    runs = atoi(optarg);
+                    if (runs < 1) {
+                        std::cerr << "Invalid number of runs" << std::endl;
+                        exit(1);
+                    }
+                    break;
+                case 'd':
+                    delay = std::chrono::milliseconds(atoi(optarg));
+                    break;
+                case 'i':
+                    interval = std::chrono::milliseconds(atoi(optarg));
+                    break;
+                case 'a':
+                    after = std::chrono::milliseconds(atoi(optarg));
+                    break;
+                case 'b':
+                    before = std::chrono::milliseconds(atoi(optarg));
+                    break;
+                case 'l':
+                    print_counter_list = true;
+                    break;
+                default:
+                    printHelpAndExit(argv[0], 1);
+            }
+        }
+
+        if (!(optind < argc)) {
+            workload_and_args = nullptr;
+        } else {
+            workload_and_args = &argv[optind];
+        }
+
+        /////// Infer other stuff
+        unit = energy_delayed_product ? "mJs" : "mJ";
+    }
 
 	void printHelpAndExit(char *progname, int exitcode = 0)
 	{
@@ -158,3 +169,7 @@ struct ProgArgs
 	}
 
 };
+
+extern Settings settings;
+
+} // namespace settings
