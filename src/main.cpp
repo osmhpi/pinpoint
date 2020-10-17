@@ -2,12 +2,14 @@
 #include "Sampler.h"
 #include "Registry.h"
 
+#include <iostream>
+
 int main(int argc, char *argv[])
 {
-	settings::settings.readProgArgs(argc, argv);
+	settings::readProgArgs(argc, argv);
 	Registry::setup();
 
-	settings::settings.validate();
+	settings::validate();
 
 	try	{
 		Experiment experiment;
