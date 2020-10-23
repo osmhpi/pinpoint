@@ -22,7 +22,7 @@ public:
 		fclose(m_fp);
 	}
 
-	virtual int read_string(char *buf, size_t buflen)
+	virtual int read_mW_string(char *buf, size_t buflen)
 	{
 		size_t pos;
 		rewind(m_fp);
@@ -32,11 +32,11 @@ public:
 		return pos;
 	}
 	
-	virtual int read()
+	virtual units::power::watt_t read()
 	{
 		char buf[255];
-		read_string(buf, sizeof(buf));
-		return atoi(buf);
+		read_mW_string(buf, sizeof(buf));
+		return units::power::milliwatt_t(atoi(buf));
 	}
 
 private:

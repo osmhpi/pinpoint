@@ -18,12 +18,7 @@ public:
 
 	virtual ~MCP_EasyPower();
 
-	virtual int read();
-
-	virtual int read_string(char *buf, size_t buflen)
-	{
-		return snprintf(buf, buflen, "%d\n", read());
-	}
+	virtual units::power::watt_t read();
 
 private:
 	struct MCP_EasyPowerDetail *m_detail;

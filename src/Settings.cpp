@@ -114,7 +114,7 @@ void readProgArgs(int argc, char *argv[])
 	}
 
 	/////// Infer other stuff
-	unit = energy_delayed_product ? "mJs" : "mJ";
+	unit = energy_delayed_product ? "Js" : "J";
 }
 
 void validate()

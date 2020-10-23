@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "Units.h"
+
 class PowerDataSource;
 typedef std::shared_ptr<PowerDataSource> PowerDataSourcePtr;
 
@@ -18,8 +20,7 @@ public:
 	//   static PowerDataSourcePtr openCounter(const std::string & counterName);
 	//   static void registerPossibleAliases();
 
-	virtual int read() = 0;
-	virtual int read_string(char *buf, size_t buflen) = 0;
+	virtual units::power::watt_t read() = 0;
 
 	PowerDataSource() :
 		m_acc(0)
@@ -39,7 +40,7 @@ public:
 
 	void accumulate()
 	{
-		m_acc += read();
+		m_acc += read().to<accumulate_t>();
 	}
 
 	accumulate_t accumulator() const
@@ -55,6 +56,12 @@ public:
 	void setName(const std::string & name)
 	{
 		m_name = name;
+	}
+
+	// For continuous printing
+
+	virtual int read_mW_string(char *buf, size_t buflen) {
+		return snprintf(buf, buflen, "%d\n", units::power::milliwatt_t(read()).to<int>());
 	}
 
 protected:

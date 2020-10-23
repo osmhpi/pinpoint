@@ -111,7 +111,7 @@ void Sampler::continuous_print_tick()
 	size_t pos = 0;
 	size_t nbytes;
 	for (auto & dev: counters) {
-		nbytes = dev->read_string(buf + pos, avail);
+		nbytes = dev->read_mW_string(buf + pos, avail);
 		pos += nbytes;
 		avail -= nbytes;
 		buf[pos - 1] = ',';
