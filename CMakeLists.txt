@@ -5,6 +5,7 @@ project(pinpoint LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+include_directories(.)
 include_directories(src)
 find_package(Threads)
 
