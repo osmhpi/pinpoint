@@ -18,7 +18,7 @@ public:
 
 	virtual ~MCP_EasyPower();
 
-	virtual units::power::watt_t read();
+	virtual PowerSample read();
 
 private:
 	struct MCP_EasyPowerDetail *m_detail;

@@ -32,11 +32,11 @@ public:
 		return pos;
 	}
 	
-	virtual units::power::watt_t read()
+	virtual PowerSample read()
 	{
 		char buf[255];
 		read_mW_string(buf, sizeof(buf));
-		return units::power::milliwatt_t(atoi(buf));
+		return PowerSample(units::power::milliwatt_t(atoi(buf)));
 	}
 
 private:

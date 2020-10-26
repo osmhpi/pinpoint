@@ -11,7 +11,7 @@ struct SamplerDetail;
 
 struct Sampler
 {
-	using result_t = std::vector<PowerDataSource::accumulate_t>;
+	using result_t = std::vector<units::energy::joule_t>;
 	std::vector<PowerDataSourcePtr> counters;
 
 	Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & counterOrAliasNames, bool continuous_print_flag = false);

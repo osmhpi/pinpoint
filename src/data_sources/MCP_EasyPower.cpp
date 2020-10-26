@@ -171,8 +171,8 @@ MCP_EasyPower::~MCP_EasyPower()
 	delete m_detail;
 }
 
-units::power::watt_t MCP_EasyPower::read()
+PowerSample MCP_EasyPower::read()
 {
 	// MCP returns data in 10mW steps
-	return units::power::centiwatt_t(m_detail->device->read(m_detail->channel - 1));
+	return PowerSample(units::power::centiwatt_t(m_detail->device->read(m_detail->channel - 1)));
 }

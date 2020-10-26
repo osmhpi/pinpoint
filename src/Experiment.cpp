@@ -31,9 +31,9 @@ void Experiment::printResult()
 
 	std::cerr << "\b':" << std::endl;
 	std::cerr << "[interval: " << settings::interval.count() << "ms, before: "
-							   << settings::before.count() << " ms, after: "
-							   << settings::after.count() << " ms, delay: "
-							   << settings::delay.count() << " ms, runs: "
+							   << settings::before.count() << "ms, after: "
+							   << settings::after.count() << "ms, delay: "
+							   << settings::delay.count() << "ms, runs: "
 							   << settings::runs << "]" << std::endl;
 	std::cerr << std::endl;
 
@@ -108,22 +108,17 @@ Experiment::Result Experiment::run_single()
 	auto end_time = std::chrono::high_resolution_clock::now();
 
 	Result result;
-	result.samples = sampler.stop(std::chrono::milliseconds(settings::after));
+	result.energyBySource = sampler.stop(std::chrono::milliseconds(settings::after));
 	result.workload_wall_time = std::chrono::duration_cast<Result::time_res>(end_time - start_time);
 	return result;
 }
 
-double Experiment::calcResult(const Experiment::Result & res, const int sample_index)
+double Experiment::calcResult(const Experiment::Result & res, const int counterIndex)
 {
 	using sec_double = std::chrono::duration<double, std::ratio<1>>;
-	// Assuming:
-	//   * constant interval
-	//   * accumulate_t contains sum of milli-Watt measurements
-	//   * we take lower Darboux integral ... :( [since we measure at start of interval]
 
-	PowerDataSource::accumulate_t power_sum_mW = res.samples[sample_index];
-	double energy_mJ = (double) power_sum_mW * std::chrono::duration_cast<sec_double>(settings::interval).count();
-	double edp_mJs = energy_mJ * std::chrono::duration_cast<sec_double>(res.workload_wall_time).count();
+	units::energy::joule_t energy = res.energyBySource[counterIndex];
+	units::edp::joule_second_t edp = energy * as_unit_seconds(std::chrono::duration_cast<sec_double>(res.workload_wall_time));
 
-	return settings::energy_delayed_product ? edp_mJs : energy_mJ;
+	return settings::energy_delayed_product ? edp.to<double>() : energy.to<double>();
 }

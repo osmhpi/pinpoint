@@ -11,7 +11,7 @@ public:
 	struct Result
 	{
 		using time_res = std::chrono::duration<double, std::ratio<1>>;
-		Sampler::result_t samples;
+		Sampler::result_t energyBySource;
 		time_res workload_wall_time;
 	};
 

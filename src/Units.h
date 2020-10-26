@@ -14,7 +14,7 @@ UNIT_ADD_WITH_METRIC_PREFIXES(edp, joule_second, joule_seconds, Js, unit<std::ra
 
 }
 
-static inline units::time::second_t as_unit_seconds(const std::chrono::duration<double> & std_seconds)
+inline units::time::second_t as_unit_seconds(const std::chrono::duration<double> & std_seconds)
 {
 	return units::time::second_t(std_seconds.count());
 }
