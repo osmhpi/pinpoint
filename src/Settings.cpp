@@ -19,8 +19,6 @@ std::chrono::milliseconds before(0);
 std::chrono::milliseconds after(0);
 char **workload_and_args = nullptr;
 
-std::string unit;
-
 // --------------------------------------------------------------
 
 template<char delimiter>
@@ -112,9 +110,6 @@ void readProgArgs(int argc, char *argv[])
 	} else {
 		workload_and_args = &argv[optind];
 	}
-
-	/////// Infer other stuff
-	unit = energy_delayed_product ? "Js" : "J";
 }
 
 void validate()

@@ -1,22 +1,111 @@
 #include "Experiment.h"
 
+#include "Sampler.h"
+#include "Settings.h"
+
 #include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <thread>
+#include <vector>
 
 #include <sys/wait.h>
 #include <unistd.h>
 
+// Just required for proper formated abbrevations in iostream
+
+using namespace units::power;
+using namespace units::energy;
+using namespace units::time;
+using namespace units::edp;
+
+struct ExperimentDetail
+{
+	using energy_series = std::vector<units::energy::joule_t>;
+	using edp_series = std::vector<units::edp::joule_second_t>;
+
+	std::vector<energy_series> energy_series_by_source;
+	std::vector<edp_series> edp_series_by_source;
+	std::vector<units::time::second_t> wall_times;
+
+	void prepare(const size_t numSources, const size_t numRuns)
+	{
+		wall_times.clear();
+		energy_series_by_source.clear();
+		edp_series_by_source.clear();
+
+		wall_times.reserve(numRuns);
+		energy_series_by_source.resize(numSources);
+		edp_series_by_source.resize(numSources);
+	}
+
+	void store_run(const Sampler::result_t & energy_by_source, const units::time::second_t & workload_wall_time)
+	{
+		wall_times.push_back(workload_wall_time);
+		for (size_t i = 0; i < energy_by_source.size(); i++) {
+			energy_series_by_source[i].push_back(energy_by_source[i]);
+			edp_series_by_source[i].push_back(energy_by_source[i] * workload_wall_time);
+		}
+	}
+};
+
+Experiment::Experiment() :
+	m_detail(new ExperimentDetail)
+{
+	;;
+}
+
+Experiment::~Experiment()
+{
+	delete m_detail;
+}
+
 void Experiment::run()
 {
+	m_detail->prepare(settings::counters.size(), settings::runs);
+
 	for (unsigned int i = 0; i < settings::runs; i++) {
 		if (settings::continuous_print_flag && settings::runs > 1)
 			std::cout << "### Run " << i << std::endl;
-		m_results.push_back(run_single());
+		run_single();
 		std::this_thread::sleep_for(settings::delay);
 	}
+}
+
+template<typename U>
+std::tuple<units::unit_t<U>, double> meanAndStddevpercent(const std::vector<units::unit_t<U>> & values)
+{
+	using U_t = units::unit_t<U>;
+	U_t mean(0);
+	units::unit_t<units::squared<U>> variance(0);
+
+	for (const U_t & value: values) {
+		mean += value / settings::runs;
+	}
+	for (const U_t & value: values) {
+		U_t vi = value - mean;
+		variance += vi * vi / settings::runs;
+	}
+
+	U_t stddev = units::math::sqrt(variance);
+	double stddev_percent = (stddev / mean) * 100.0;
+	return std::make_tuple(mean, stddev_percent);
+}
+
+template<typename U>
+void printSourceLine(const std::vector<units::unit_t<U>> & series, const std::string & sourceName)
+{
+	auto mean = meanAndStddevpercent<U>(series);
+
+	std::cerr << "\t"
+		<< std::fixed << std::setprecision(2)
+		<< std::get<0>(mean) << "\t"
+		<< sourceName;
+	if (settings::runs > 1) std::cerr << "\t"
+		<< "( +- " << std::get<1>(mean) << "% )";
+
+	std::cerr << std::endl;
 }
 
 void Experiment::printResult()
@@ -37,57 +126,28 @@ void Experiment::printResult()
 							   << settings::runs << "]" << std::endl;
 	std::cerr << std::endl;
 
-	std::vector<double> means(settings::counters.size(), 0);
-	double mean_time = 0;
-	for (const auto & res: m_results) {
-		for (size_t i = 0; i < means.size(); i++) {
-			means[i] += calcResult(res, i) / settings::runs;
+	for (size_t i = 0; i < settings::counters.size(); i++) {
+		if (settings::energy_delayed_product) {
+			printSourceLine(m_detail->edp_series_by_source[i], settings::counters[i]);
+		} else {
+			printSourceLine(m_detail->energy_series_by_source[i], settings::counters[i]);
 		}
-		mean_time += res.workload_wall_time.count() / settings::runs;
-	}
-
-	std::vector<double> variances(settings::counters.size(), 0);
-	double variance_time = 0;
-	for (const auto & res: m_results) {
-		for (size_t i = 0; i < variances.size(); i++) {
-			double vi = calcResult(res, i) - means[i];
-			variances[i] += vi * vi / settings::runs;
-		}
-
-		double vti = res.workload_wall_time.count() - mean_time;
-		variance_time += vti * vti / settings::runs;
-	}
-
-	std::vector<double> stddev_percents(settings::counters.size(), 0);
-	for (size_t i = 0; i < stddev_percents.size(); i++) {
-		stddev_percents[i] = (std::sqrt(variances[i]) / means[i]) * 100;
-	}
-	double stddev_percent_time = (std::sqrt(variance_time) / mean_time) * 100;
-
-	for (size_t i = 0; i < means.size(); i++) {
-		std::cerr << "\t"
-			<< std::fixed << std::setprecision(2)
-			<< means[i] << " " << settings::unit << "\t"
-			<< settings::counters[i];
-		if (settings::runs > 1) std::cerr << "\t"
-			<< "( +- " << stddev_percents[i] << "% )";
-
-		std::cerr << std::endl;
 	}
 	std::cerr << std::endl;
 
+	auto mean_time = meanAndStddevpercent<units::time::second>(m_detail->wall_times);
 	std::cerr << "\t"
 		<< std::fixed << std::setprecision(8)
-		<< mean_time << " seconds time elapsed ";
+		<< std::get<0>(mean_time).to<double>() << " seconds time elapsed ";
 	if (settings::runs > 1) std::cerr
 		<< std::fixed << std::setprecision(2)
-		<< "( +- " << stddev_percent_time << "% )";
+		<< "( +- " << std::get<1>(mean_time) << "% )";
 	std::cerr << std::endl;
 
 	std::cerr << std::endl;
 }
 
-Experiment::Result Experiment::run_single()
+void Experiment::run_single()
 {
 	Sampler sampler(settings::interval, settings::counters, settings::continuous_print_flag);
 
@@ -106,19 +166,7 @@ Experiment::Result Experiment::run_single()
 	}
 
 	auto end_time = std::chrono::high_resolution_clock::now();
+	auto energy_by_source = sampler.stop(std::chrono::milliseconds(settings::after));
 
-	Result result;
-	result.energyBySource = sampler.stop(std::chrono::milliseconds(settings::after));
-	result.workload_wall_time = std::chrono::duration_cast<Result::time_res>(end_time - start_time);
-	return result;
-}
-
-double Experiment::calcResult(const Experiment::Result & res, const int counterIndex)
-{
-	using sec_double = std::chrono::duration<double, std::ratio<1>>;
-
-	units::energy::joule_t energy = res.energyBySource[counterIndex];
-	units::edp::joule_second_t edp = energy * as_unit_seconds(std::chrono::duration_cast<sec_double>(res.workload_wall_time));
-
-	return settings::energy_delayed_product ? edp.to<double>() : energy.to<double>();
+	m_detail->store_run(energy_by_source, as_unit_seconds(end_time - start_time));
 }
