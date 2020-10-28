@@ -19,26 +19,23 @@ public:
 	//   static PowerDataSourcePtr openCounter(const std::string & counterName);
 	//   static void registerPossibleAliases();
 
-	virtual PowerSample read() = 0;
-
 	PowerDataSource();
-
 	virtual ~PowerDataSource();
 
+	virtual PowerSample read() = 0;
+
 	void reset_acc();
-	void accumulate();
-	units::energy::joule_t accumulator() const;
+	virtual void accumulate();
+	virtual units::energy::joule_t accumulator() const;
 
 	std::string name() const;
 	void setName(const std::string & name);
 
 	// For continuous printing
-
 	virtual int read_mW_string(char *buf, size_t buflen) {
 		return snprintf(buf, buflen, "%d\n", units::power::milliwatt_t(read().value).to<int>());
 	}
 
 private:
-	std::string m_name;
 	PowerDataSourceDetail *m_detail;
 };

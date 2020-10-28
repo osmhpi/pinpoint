@@ -9,7 +9,8 @@ include_directories(.)
 include_directories(src)
 find_package(Threads)
 
-add_executable(pinpoint 
+add_executable(pinpoint
+    src/EnergyDataSource.cpp
 	src/Experiment.cpp
 	src/PowerDataSource.cpp
 	src/Registry.cpp

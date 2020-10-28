@@ -5,22 +5,30 @@
 template<class ValueT, class ClockT>
 struct Sample
 {
-    std::chrono::time_point<ClockT> timestamp;
-    ValueT value;
+	using value_t = ValueT;
+	using clock_t = ClockT;
 
-    Sample(const ValueT & _value) :
-        timestamp(ClockT::now()),
-        value(_value)
-    {
-        ;;
-    }
+	std::chrono::time_point<ClockT> timestamp;
+	ValueT value;
 
-    Sample(const std::chrono::time_point<ClockT> & _timestamp, const ValueT & _value) :
-        timestamp(_timestamp),
-        value(_value)
-    {
-        ;;
-    }
+	Sample()
+	{
+		;;
+	}
+
+	Sample(const ValueT & _value) :
+		timestamp(ClockT::now()),
+		value(_value)
+	{
+		;;
+	}
+
+	Sample(const std::chrono::time_point<ClockT> & _timestamp, const ValueT & _value) :
+		timestamp(_timestamp),
+		value(_value)
+	{
+		;;
+	}
 
 };
 
