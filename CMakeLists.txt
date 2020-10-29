@@ -18,6 +18,7 @@ add_executable(pinpoint
 	src/Settings.cpp
 	src/data_sources/JetsonCounter.cpp
 	src/data_sources/MCP_EasyPower.cpp
+	src/data_sources/RAPL.cpp
 	src/data_sources/mcp_com.c
 	src/main.cpp
 )
