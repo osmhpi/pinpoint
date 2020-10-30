@@ -7,8 +7,9 @@ struct Sample
 {
 	using value_t = ValueT;
 	using clock_t = ClockT;
+	using timestamp_t = std::chrono::time_point<ClockT>;
 
-	std::chrono::time_point<ClockT> timestamp;
+	timestamp_t timestamp;
 	ValueT value;
 
 	Sample()
@@ -23,7 +24,7 @@ struct Sample
 		;;
 	}
 
-	Sample(const std::chrono::time_point<ClockT> & _timestamp, const ValueT & _value) :
+	Sample(const timestamp_t & _timestamp, const ValueT & _value) :
 		timestamp(_timestamp),
 		value(_value)
 	{
