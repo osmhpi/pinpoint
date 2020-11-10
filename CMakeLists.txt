@@ -20,6 +20,7 @@ add_executable(pinpoint
 	src/data_sources/MCP_EasyPower.cpp
 	src/data_sources/RAPL.cpp
 	src/data_sources/mcp_com.c
+  src/data_sources/Board96.cpp
 	src/main.cpp
 )
 
