@@ -4,6 +4,8 @@
 
 #include <fstream>
 
+struct Board96Detail;
+
 class Board96: public PowerDataSource
 {
 public:
@@ -18,8 +20,10 @@ public:
 
   virtual PowerSample read() override;
 
+  virtual ~Board96();
+
 private:
   Board96(std::string filename);
 
-  std::ifstream ifstrm;
+  struct Board96Detail *m_detail;
 };

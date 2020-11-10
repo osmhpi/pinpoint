@@ -1,7 +1,11 @@
 #include "Board96.h"
 #include "Registry.h"
 
-#include <iostream>
+#include <fstream>
+
+struct Board96Detail {
+  std::ifstream ifstrm;
+};
 
 std::vector<std::string> Board96::detectAvailableCounters()
 {
@@ -19,13 +23,18 @@ void Board96::registerPossibleAliases()
 }
 
 PowerSample Board96::read() {
-  ifstrm.seekg(std::ios_base::beg);
+  m_detail->ifstrm.seekg(std::ios_base::beg);
   int raw;
-  ifstrm >> raw;
+  m_detail->ifstrm >> raw;
 
   return PowerSample(units::power::microwatt_t(raw));
 }
 
 Board96::Board96(const std::string filename) {
-  ifstrm = std::ifstream("/sys/class/hwmon/hwmon0/power1_input");
+  m_detail = new Board96Detail();
+  m_detail->ifstrm = std::ifstream("/sys/class/hwmon/hwmon0/power1_input");
+}
+
+Board96::~Board96() {
+  delete m_detail;
 }
