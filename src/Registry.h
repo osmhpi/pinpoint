@@ -31,17 +31,12 @@ public:
 			return DataSourceT::openCounter(counterName);
 		};
 		auto res = registerSource(DataSourceT::sourceName(), sourceInfo);
-		DataSourceT::registerPossibleAliases();
+
+		for (const auto & alias: DataSourceT::possibleAliases()) {
+			registerAlias(alias.first, DataSourceT::sourceName(), alias.second);
+		}
 		return res;
 	}
-
-	template<typename DataSourceT>
-	static int registerAlias(const std::string & aliasName, const std::string & counterName)
-	{
-		return registerAlias(aliasName, DataSourceT::sourceName(), counterName);
-	}
-
-	static int registerAlias(const std::string & aliasName, const std::string & sourceName, const std::string & counterName);
 
 	static std::vector<std::string> availableCounters();
 	static std::vector<std::pair<std::string,std::string>> availableAliases();
@@ -51,4 +46,5 @@ private:
 	static int registerSource(const std::string & sourceName, const SourceInfo & sourceInfo);
 	static bool isAvailable(const std::string & sourceName, const std::string & counterName);
 
+	static int registerAlias(const std::string & aliasName, const std::string & sourceName, const std::string & counterName);
 };

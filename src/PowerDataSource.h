@@ -1,9 +1,10 @@
 #pragma once
 
+#include "Alias.h"
+#include "Sample.h"
+
 #include <memory>
 #include <vector>
-
-#include "Sample.h"
 
 struct PowerDataSourceDetail;
 
@@ -17,7 +18,7 @@ public:
 	//   static std::string sourceName();
 	//   static std::vector<std::string> detectAvailableCounters();
 	//   static PowerDataSourcePtr openCounter(const std::string & counterName);
-	//   static void registerPossibleAliases();
+	//   static Aliases possibleAliases();
 
 	PowerDataSource();
 	virtual ~PowerDataSource();

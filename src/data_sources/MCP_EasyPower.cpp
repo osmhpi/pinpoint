@@ -1,7 +1,5 @@
 #include "MCP_EasyPower.h"
 
-#include "Registry.h"
-
 #include <array>
 #include <cstdlib>
 #include <dirent.h>
@@ -139,11 +137,13 @@ PowerDataSourcePtr MCP_EasyPower::openCounter(const std::string &counterName)
 	return PowerDataSourcePtr(new MCP_EasyPower(dev, ch));
 }
 
-void MCP_EasyPower::registerPossibleAliases()
+Aliases MCP_EasyPower::possibleAliases()
 {
-	Registry::registerAlias<MCP_EasyPower>("EXT_IN", "dev0ch1");
-	Registry::registerAlias<MCP_EasyPower>("MCP1", "dev0ch1");
-	Registry::registerAlias<MCP_EasyPower>("MCP2", "dev0ch2");
+	return {
+		{"EXT_IN", "dev0ch1"},
+		{"MCP1", "dev0ch1"},
+		{"MCP2", "dev0ch2"},
+	};
 }
 
 /*******************************************************************/

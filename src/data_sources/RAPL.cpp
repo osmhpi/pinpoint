@@ -1,7 +1,5 @@
 #include "RAPL.h"
 
-#include "Registry.h"
-
 #include <cstring>
 #include <fstream>
 #include <map>
@@ -447,11 +445,13 @@ PowerDataSourcePtr RAPL::openCounter(const std::string &counterName)
 	return PowerDataSourcePtr(new RAPL(counterName));
 }
 
-void RAPL::registerPossibleAliases()
+Aliases RAPL::possibleAliases()
 {
-	Registry::registerAlias<RAPL>("CPU", "cores");
-	Registry::registerAlias<RAPL>("GPU", "gpu");
-	Registry::registerAlias<RAPL>("RAM", "ram");
+	return {
+		{"CPU", "cores"},
+		{"GPU", "gpu"},
+		{"RAM", "ram"},
+	};
 }
 
 RAPL::~RAPL()
