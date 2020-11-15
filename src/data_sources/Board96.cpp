@@ -22,9 +22,7 @@ std::map<std::string, std::string> counterNameToFileName;
 std::vector<std::string> Board96::detectAvailableCounters()
 {
   std::vector<std::string> counters;
-  // search /sys/class/hwmon/
-  // find ina226 chips
-  
+
   std::shared_ptr<DIR> dir(opendir(searchPath.c_str()), [](DIR *dir) {if (dir) closedir(dir);});
   if (!dir) return counters;
 
@@ -32,35 +30,26 @@ std::vector<std::string> Board96::detectAvailableCounters()
   while ((entry = readdir(dir.get()))) {
     if (entry->d_type != DT_LNK) continue;
 
-    struct stat sb;
-    lstat(entry->d_name, &sb);
+    auto devicePath = searchPath + entry->d_name + "/";
+    std::ifstream nameFile(devicePath + "name");
 
-    std::string linkPath = searchPath + entry->d_name;
-    size_t bufSize = PATH_MAX;
-    char *buf = (char*) malloc(bufSize);
-    ssize_t x = readlink(linkPath.c_str(), buf, bufSize);
-    buf[x] = '\0';
-    if (x == -1) {
-      perror("readlink");
-    }
+    std::string deviceName;
+    nameFile >> deviceName;
 
-    auto devicePath = searchPath + buf;
-    std::ifstream nameFile(devicePath + "/name");
+    if (deviceName == "ina226") {
+      std::string counterName = "power-";
+      counterName += entry->d_name;
 
-    std::string name;
-    nameFile >> name;
-
-    if (name == "ina226") {
-      counterNameToFileName.insert({"power1", devicePath + "/power1_input"});
+      counters.push_back(counterName);
+      counterNameToFileName.insert({counterName, devicePath + "power1_input"});
     }
   }
 
-  return std::vector<std::string> {"power1"};
+  return counters;
 }
 
 PowerDataSourcePtr Board96::openCounter(const std::string &counterName)
 {
-  std::cout << "found: " << counterNameToFileName.at(counterName) << std::endl;
   return PowerDataSourcePtr(new Board96(counterNameToFileName.at(counterName)));
 }
 
