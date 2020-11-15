@@ -4,12 +4,12 @@
 
 #include <fstream>
 #include <map>
-#include <memory>
+
+std::map<std::string, std::string> counterNameToFileName;
+
+#if defined(__linux__)
 
 #include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
 struct INA226Detail
 {
@@ -17,8 +17,6 @@ struct INA226Detail
 };
 
 std::string searchPath = "/sys/class/hwmon/";
-
-std::map<std::string, std::string> counterNameToFileName;
 
 std::vector<std::string> INA226::detectAvailableCounters()
 {
@@ -49,6 +47,49 @@ std::vector<std::string> INA226::detectAvailableCounters()
   return counters;
 }
 
+PowerSample INA226::read() {
+  m_detail->ifstrm.seekg(std::ios_base::beg);
+  int val;
+  m_detail->ifstrm >> val;
+
+  return PowerSample(units::power::microwatt_t(val));
+}
+
+INA226::INA226(const std::string &filename) :
+  PowerDataSource(),
+  m_detail(new INA226Detail)
+{
+  m_detail->ifstrm = std::ifstream(filename);
+
+  if (!m_detail->ifstrm.is_open()) {
+    throw std::runtime_error("Cannot open INA226 file " + filename);
+  }
+}
+
+#else
+
+struct INA226Detail
+{
+  ;
+};
+
+std::vector<std::string> INA226::detectAvailableCounters() {
+  return std::vector<std::string>();
+}
+
+INA226::INA226(const std::string &filename) :
+  m_detail(new INA226Detail)
+{
+
+}
+
+PowerSample INA226::read()
+{
+  return PowerSample();
+}
+
+#endif
+
 PowerDataSourcePtr INA226::openCounter(const std::string &counterName)
 {
   return PowerDataSourcePtr(new INA226(counterNameToFileName.at(counterName)));
@@ -59,20 +100,6 @@ void INA226::registerPossibleAliases()
   if (counterNameToFileName.size() >= 1) {
     Registry::registerAlias<INA226>("IN", counterNameToFileName.cbegin()->first);
   }
-}
-
-PowerSample INA226::read() {
-  m_detail->ifstrm.seekg(std::ios_base::beg);
-  int val;
-  m_detail->ifstrm >> val;
-
-  return PowerSample(units::power::microwatt_t(val));
-}
-
-INA226::INA226(const std::string &filename)
-{
-  m_detail = new INA226Detail();
-  m_detail->ifstrm = std::ifstream(filename);
 }
 
 INA226::~INA226()
