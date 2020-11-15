@@ -95,11 +95,13 @@ PowerDataSourcePtr INA226::openCounter(const std::string &counterName)
   return PowerDataSourcePtr(new INA226(counterNameToFileName.at(counterName)));
 }
 
-void INA226::registerPossibleAliases()
+Aliases INA226::possibleAliases()
 {
   if (counterNameToFileName.size() >= 1) {
-    Registry::registerAlias<INA226>("IN", counterNameToFileName.cbegin()->first);
+    return {{"IN", counterNameToFileName.cbegin()->first}};
   }
+
+  return {};
 }
 
 INA226::~INA226()

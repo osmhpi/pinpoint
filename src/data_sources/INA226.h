@@ -17,7 +17,7 @@ public:
 
   static std::vector<std::string> detectAvailableCounters();
   static PowerDataSourcePtr openCounter(const std::string & counterName);
-  static void registerPossibleAliases();
+  static Aliases possibleAliases();
 
   virtual PowerSample read() override;
 
