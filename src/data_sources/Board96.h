@@ -2,8 +2,6 @@
 
 #include <PowerDataSource.h>
 
-#include <fstream>
-
 struct Board96Detail;
 
 class Board96: public PowerDataSource
@@ -23,7 +21,7 @@ public:
   virtual ~Board96();
 
 private:
-  Board96(std::string filename);
+  Board96(const std::string &filename);
 
   struct Board96Detail *m_detail;
 };
