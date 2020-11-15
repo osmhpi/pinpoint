@@ -11,7 +11,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-struct INA226Detail {
+struct INA226Detail
+{
   std::ifstream ifstrm;
 };
 
@@ -55,7 +56,9 @@ PowerDataSourcePtr INA226::openCounter(const std::string &counterName)
 
 void INA226::registerPossibleAliases()
 {
-  Registry::registerAlias<INA226>("IN", "power1");
+  if (counterNameToFileName.size() >= 1) {
+    Registry::registerAlias<INA226>("IN", counterNameToFileName.cbegin()->first);
+  }
 }
 
 PowerSample INA226::read() {
@@ -66,11 +69,13 @@ PowerSample INA226::read() {
   return PowerSample(units::power::microwatt_t(val));
 }
 
-INA226::INA226(const std::string &filename) {
+INA226::INA226(const std::string &filename)
+{
   m_detail = new INA226Detail();
   m_detail->ifstrm = std::ifstream(filename);
 }
 
-INA226::~INA226() {
+INA226::~INA226()
+{
   delete m_detail;
 }
