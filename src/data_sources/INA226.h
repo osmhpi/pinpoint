@@ -2,14 +2,17 @@
 
 #include <PowerDataSource.h>
 
-struct Board96Detail;
+// This class likely be used for all INA2xx chips with minor adjustments
+// See https://www.kernel.org/doc/html/latest/hwmon/ina2xx.html
 
-class Board96: public PowerDataSource
+struct INA226Detail;
+
+class INA226: public PowerDataSource
 {
 public:
   static std::string sourceName()
   {
-    return "board96";
+    return "ina226";
   }
 
   static std::vector<std::string> detectAvailableCounters();
@@ -18,10 +21,10 @@ public:
 
   virtual PowerSample read() override;
 
-  virtual ~Board96();
+  virtual ~INA226();
 
 private:
-  Board96(const std::string &filename);
+  INA226(const std::string &filename);
 
-  struct Board96Detail *m_detail;
+  struct INA226Detail *m_detail;
 };

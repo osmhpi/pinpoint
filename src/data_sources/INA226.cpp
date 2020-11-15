@@ -1,4 +1,4 @@
-#include "Board96.h"
+#include "INA226.h"
 
 #include "Registry.h"
 
@@ -11,7 +11,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-struct Board96Detail {
+struct INA226Detail {
   std::ifstream ifstrm;
 };
 
@@ -19,7 +19,7 @@ std::string searchPath = "/sys/class/hwmon/";
 
 std::map<std::string, std::string> counterNameToFileName;
 
-std::vector<std::string> Board96::detectAvailableCounters()
+std::vector<std::string> INA226::detectAvailableCounters()
 {
   std::vector<std::string> counters;
 
@@ -48,17 +48,17 @@ std::vector<std::string> Board96::detectAvailableCounters()
   return counters;
 }
 
-PowerDataSourcePtr Board96::openCounter(const std::string &counterName)
+PowerDataSourcePtr INA226::openCounter(const std::string &counterName)
 {
-  return PowerDataSourcePtr(new Board96(counterNameToFileName.at(counterName)));
+  return PowerDataSourcePtr(new INA226(counterNameToFileName.at(counterName)));
 }
 
-void Board96::registerPossibleAliases()
+void INA226::registerPossibleAliases()
 {
-  Registry::registerAlias<Board96>("IN", "power1");
+  Registry::registerAlias<INA226>("IN", "power1");
 }
 
-PowerSample Board96::read() {
+PowerSample INA226::read() {
   m_detail->ifstrm.seekg(std::ios_base::beg);
   int val;
   m_detail->ifstrm >> val;
@@ -66,11 +66,11 @@ PowerSample Board96::read() {
   return PowerSample(units::power::microwatt_t(val));
 }
 
-Board96::Board96(const std::string &filename) {
-  m_detail = new Board96Detail();
+INA226::INA226(const std::string &filename) {
+  m_detail = new INA226Detail();
   m_detail->ifstrm = std::ifstream(filename);
 }
 
-Board96::~Board96() {
+INA226::~INA226() {
   delete m_detail;
 }
