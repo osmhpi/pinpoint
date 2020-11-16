@@ -1,26 +1,20 @@
 #include "Registry.h"
 
-#include "data_sources/JetsonCounter.h"
-#include "data_sources/MCP_EasyPower.h"
-#include "data_sources/RAPL.h"
-
-/**************************************************************/
-
-void Registry::setup()
-{
-	Registry::registerSource<JetsonCounter>();
-	Registry::registerSource<MCP_EasyPower>();
-	Registry::registerSource<RAPL>();
-}
-
-/**************************************************************/
-
 #include <algorithm>
 #include <map>
 #include <utility>
 
 static std::map<std::string,Registry::SourceInfo> s_sources;
 static std::map<std::string,std::pair<std::string,std::string>> s_aliases;
+
+/**************************************************************/
+
+void Registry::setup()
+{
+	;;
+}
+
+/**************************************************************/
 
 int Registry::registerSource(const std::string & sourceName, const SourceInfo & sourceInfo)
 {

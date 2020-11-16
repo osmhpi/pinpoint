@@ -1,11 +1,18 @@
 #include "JetsonCounter.h"
+#include "Registry.h"
 
 #include <map>
 #include <fstream>
 
+struct JetsonCounterDetail
+{
+	std::string filename;
+	FILE *fp;
+};
+
 static std::map<std::string, std::string> railNameToFileName;
 
-static std::vector<std::string> searchPaths = {
+static const std::vector<std::string> searchPaths = {
 	"/sys/bus/i2c/devices/0-0040/", // Tegra TX2
 	"/sys/bus/i2c/devices/0-0041/",
 	"/sys/bus/i2c/devices/1-0040/", // Xavier AGX
@@ -57,6 +64,7 @@ std::vector<std::string> JetsonCounter::detectAvailableCounters()
 	return result;
 }
 
+
 Aliases JetsonCounter::possibleAliases()
 {
 	return {
@@ -84,3 +92,31 @@ PowerDataSourcePtr JetsonCounter::openCounter(const std::string & counterName)
 {
 	return PowerDataSourcePtr(new JetsonCounter(railNameToFileName.at(counterName)));
 }
+
+JetsonCounter::JetsonCounter(const std::string & filename) :
+	PowerDataSource(),
+	m_detail(new JetsonCounterDetail)
+{
+	m_detail->filename = filename;
+	m_detail->fp = fopen(m_detail->filename.c_str(), "r");
+	if (m_detail->fp == NULL)
+		throw std::runtime_error("Cannot open " + m_detail->filename);
+}
+
+JetsonCounter::~JetsonCounter()
+{
+	fclose(m_detail->fp);
+	delete  m_detail;
+}
+
+int JetsonCounter::read_mW_string(char *buf, size_t buflen)
+{
+	size_t pos;
+	rewind(m_detail->fp);
+	pos = fread(buf, sizeof(char), buflen, m_detail->fp);
+	if (pos > 0)
+		buf[pos-1] = '\0';
+	return pos;
+}
+
+PINPOINT_REGISTER_DATA_SOURCE(JetsonCounter)

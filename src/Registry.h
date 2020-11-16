@@ -48,3 +48,6 @@ private:
 
 	static int registerAlias(const std::string & aliasName, const std::string & sourceName, const std::string & counterName);
 };
+
+#define PINPOINT_REGISTER_DATA_SOURCE(ClassName) \
+	static int __pp_datasource_id_##ClassName = Registry::registerSource<ClassName>();

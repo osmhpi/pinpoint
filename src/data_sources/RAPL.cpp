@@ -1,4 +1,5 @@
 #include "RAPL.h"
+#include "Registry.h"
 
 #include <cstring>
 #include <fstream>
@@ -224,6 +225,8 @@ static int diagCall64(uint64_t aMode, void* aBuf) {
 
 using RAPLEventInfo = int;
 
+#include <iostream>
+
 struct RAPLDetail
 {
 	// shared info
@@ -251,6 +254,12 @@ struct RAPLDetail
 			throw std::runtime_error("diagCall64() failed");
 		}
 		measurement_timepoint = EnergySample::clock_t::now();
+
+		std::cout << " now   : " << measurement_timepoint.time_since_epoch().count()
+				  << " crtime: " << pkes->cest->crtime_total
+				  << " diff  : " << pkes->cest->crtime_total - measurement_timepoint.time_since_epoch().count()
+				  << " quot  : " << (double) pkes->cest->crtime_total / measurement_timepoint.time_since_epoch().count()
+				  << std::endl;
 
 		if (pkes->pkes_version != 1) {
 			throw std::runtime_error("unexpected pkes_version: " + std::to_string(pkes->pkes_version));
@@ -458,3 +467,5 @@ RAPL::~RAPL()
 {
 	delete m_detail;
 }
+
+PINPOINT_REGISTER_DATA_SOURCE(RAPL)

@@ -1,4 +1,5 @@
 #include "MCP_EasyPower.h"
+#include "Registry.h"
 
 #include <array>
 #include <cstdlib>
@@ -176,3 +177,5 @@ PowerSample MCP_EasyPower::read()
 	// MCP returns data in 10mW steps
 	return PowerSample(units::power::centiwatt_t(m_detail->device->read(m_detail->channel - 1)));
 }
+
+PINPOINT_REGISTER_DATA_SOURCE(MCP_EasyPower)

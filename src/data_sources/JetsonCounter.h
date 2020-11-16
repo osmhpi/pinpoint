@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <cstdio>
 
+struct JetsonCounterDetail;
+
 class JetsonCounter: public PowerDataSource
 {
 public:
@@ -17,21 +19,9 @@ public:
 	static PowerDataSourcePtr openCounter(const std::string & counterName);
 	static Aliases possibleAliases();
 
-	virtual ~JetsonCounter()
-	{
-		fclose(m_fp);
-	}
+	virtual ~JetsonCounter();
+	virtual int read_mW_string(char *buf, size_t buflen);
 
-	virtual int read_mW_string(char *buf, size_t buflen)
-	{
-		size_t pos;
-		rewind(m_fp);
-		pos = fread(buf, sizeof(char), buflen, m_fp);
-		if (pos > 0)
-			buf[pos-1] = '\0';
-		return pos;
-	}
-	
 	virtual PowerSample read()
 	{
 		char buf[255];
@@ -40,15 +30,7 @@ public:
 	}
 
 private:
-	std::string m_filename;
-	FILE *m_fp;
+	JetsonCounterDetail *m_detail;
 
-	JetsonCounter(const std::string & filename) :
-		PowerDataSource(),
-		m_filename(filename)
-	{
-		m_fp = fopen(m_filename.c_str(), "r");
-		if (m_fp == NULL)
-			throw std::runtime_error("Cannot open " + m_filename);
-	}
+	JetsonCounter(const std::string & filename);
 };
