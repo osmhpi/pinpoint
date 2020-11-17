@@ -4,7 +4,7 @@
 
 #include <map>
 
-std::map<std::string, std::string> counterNameToFileName;
+static std::map<std::string, std::string> counterNameToFileName;
 
 #if defined(__linux__)
 
@@ -70,7 +70,7 @@ INA226::INA226(const std::string &filename) :
 
 struct INA226Detail
 {
-	;
+	;;
 };
 
 std::vector<std::string> INA226::detectAvailableCounters() {
@@ -108,3 +108,5 @@ INA226::~INA226()
 {
 	delete m_detail;
 }
+
+PINPOINT_REGISTER_DATA_SOURCE(INA226)
