@@ -3,6 +3,7 @@
 #include "Sampler.h"
 #include "Settings.h"
 
+#include <array>
 #include <cmath>
 #include <iomanip>
 #include <iostream>
@@ -93,18 +94,44 @@ std::tuple<units::unit_t<U>, double> meanAndStddevpercent(const std::vector<unit
 	return std::make_tuple(mean, stddev_percent);
 }
 
+static constexpr size_t columnCount = 3; // value, source name, stddevpercent
+
 template<typename U>
-void printSourceLine(const std::vector<units::unit_t<U>> & series, const std::string & sourceName)
+std::array<std::string, columnCount> formatSourceLine(const std::vector<units::unit_t<U>> & series, const std::string & sourceName)
 {
+	std::array<std::string, columnCount> columns;
+	std::stringstream ss;
+
 	auto mean = meanAndStddevpercent<U>(series);
 
-	std::cerr << "\t"
-		<< std::fixed << std::setprecision(2)
-		<< std::get<0>(mean) << "\t"
-		<< sourceName;
-	if (settings::runs > 1) std::cerr << "\t"
-		<< "( +- " << std::get<1>(mean) << "% )";
+	ss << std::fixed << std::setprecision(2) << std::get<0>(mean);
+	columns[0] = ss.str();
 
+	columns[1] = sourceName;
+
+	ss.str(std::string()); ss.clear();
+
+	ss << std::get<1>(mean); // Reuse above format
+	columns[2] = ss.str();
+
+	return columns;
+}
+
+void printSourceLine(const std::array<std::string, columnCount> & columns, const std::array<size_t, columnCount> & columnWidths)
+{
+	std::cerr
+		<< "\t"
+		<< std::right << std::setw(columnWidths[0])
+		<< columns[0] << " "
+		<< std::left << std::setw(columnWidths[1])
+		<< columns[1];
+
+	if (settings::runs > 1) {
+		std::cerr
+			<< "\t"
+			<< "( +- " << std::right << std::setw(columnWidths[2])
+			<< columns[2] << "% )";
+	}
 	std::cerr << std::endl;
 }
 
@@ -126,13 +153,27 @@ void Experiment::printResult()
 							   << settings::runs << "]" << std::endl;
 	std::cerr << std::endl;
 
+	std::vector<std::array<std::string, columnCount>> lines;
+
 	for (size_t i = 0; i < settings::counters.size(); i++) {
 		if (settings::energy_delayed_product) {
-			printSourceLine(m_detail->edp_series_by_source[i], settings::counters[i]);
+			lines.push_back(formatSourceLine(m_detail->edp_series_by_source[i], settings::counters[i]));
 		} else {
-			printSourceLine(m_detail->energy_series_by_source[i], settings::counters[i]);
+			lines.push_back(formatSourceLine(m_detail->energy_series_by_source[i], settings::counters[i]));
 		}
 	}
+
+	std::array<size_t, columnCount> columnWidths = {};
+	for (const auto & line: lines) {
+		for (size_t c = 0; c < line.size(); c++) {
+			columnWidths[c] = std::max(columnWidths[c], line[c].size());
+		}
+	}
+
+	for (const auto & line: lines) {
+		printSourceLine(line, columnWidths);
+	}
+
 	std::cerr << std::endl;
 
 	auto mean_time = meanAndStddevpercent<units::time::second>(m_detail->wall_times);
