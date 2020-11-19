@@ -10,17 +10,17 @@ include_directories(src)
 find_package(Threads)
 
 add_executable(pinpoint
-    src/EnergyDataSource.cpp
+	src/EnergyDataSource.cpp
 	src/Experiment.cpp
 	src/PowerDataSource.cpp
 	src/Registry.cpp
 	src/Sampler.cpp
 	src/Settings.cpp
+	src/data_sources/INA226.cpp
 	src/data_sources/JetsonCounter.cpp
 	src/data_sources/MCP_EasyPower.cpp
 	src/data_sources/RAPL.cpp
 	src/data_sources/mcp_com.c
-	src/data_sources/INA226.cpp
 	src/main.cpp
 )
 
