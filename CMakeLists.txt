@@ -4,10 +4,18 @@ project(pinpoint LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 include_directories(.)
 include_directories(src)
 find_package(Threads)
+
+find_package(NVML)
+
+if(NVML_FOUND)
+	include_directories(${NVML_INCLUDE_DIRS})
+	add_definitions(-DUSE_NVML)
+endif(NVML_FOUND)
 
 add_executable(pinpoint
 	src/EnergyDataSource.cpp
@@ -21,7 +29,12 @@ add_executable(pinpoint
 	src/data_sources/MCP_EasyPower.cpp
 	src/data_sources/RAPL.cpp
 	src/data_sources/mcp_com.c
+	src/data_sources/NVML.cpp
 	src/main.cpp
 )
 
 target_link_libraries(pinpoint ${CMAKE_THREAD_LIBS_INIT})
+
+if(NVML_FOUND)
+	target_link_libraries(pinpoint ${NVML_LIBRARIES})
+endif(NVML_FOUND)
