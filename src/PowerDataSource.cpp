@@ -46,15 +46,18 @@ void PowerDataSource::accumulate()
 
 units::energy::joule_t PowerDataSource::accumulator() const
 {
-	// we take lower Darboux integral ...[since we measure at start of interval]
 	units::energy::joule_t integral(0);
-	for (size_t i = 0; i < m_detail->samples.size() - 1; i++) {
-		auto time_diff = as_unit_seconds(m_detail->samples[i+1].timestamp - m_detail->samples[i].timestamp);
-		integral += m_detail->samples[i].value * time_diff;
-	}
 
-	// For the last sample we assume the sleeping interval of configured length finished
-	integral += m_detail->samples.back().value * as_unit_seconds(settings::interval);
+	if (!m_detail->samples.empty()) {
+		// we take lower Darboux integral ...[since we measure at start of interval]
+		for (size_t i = 0; i < m_detail->samples.size() - 1; i++) {
+			auto time_diff = as_unit_seconds(m_detail->samples[i+1].timestamp - m_detail->samples[i].timestamp);
+			integral += m_detail->samples[i].value * time_diff;
+		}
+
+		// For the last sample we assume the sleeping interval of configured length finished
+		integral += m_detail->samples.back().value * as_unit_seconds(settings::interval);
+	}
 
 	return integral;
 }
