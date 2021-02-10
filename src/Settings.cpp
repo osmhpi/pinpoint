@@ -4,6 +4,7 @@
 #include <iterator>
 #include <sstream>
 #include <unistd.h>
+#include <getopt.h>
 
 namespace settings {
 
@@ -44,11 +45,10 @@ std::vector<std::string> str_split(const std::string & text)
 
 void printHelpAndExit(char *progname, int exitcode = 0)
 {
-	std::cout << "Usage: " << progname << " -h|[-c|-p] [-e dev1,dev2,...] ([-r|-d|-i|-b|-a] N)* [--] workload [args]" << std::endl;
+	std::cout << "Usage: " << progname << " -h|[-c [--header]|-p] [-e dev1,dev2,...] ([-r|-d|-i|-b|-a] N)* [--] workload [args]" << std::endl;
 	std::cout << "\t-h Print this help and exit" << std::endl;
 	std::cout << "\t-l Print a list of available counters and exit" << std::endl;
 	std::cout << "\t-c Continuously print power levels (mW) to stdout (skip energy stats)" << std::endl;
-	std::cout << "\t-n If continuously printing, print the counter names before each run" << std::endl;
 	std::cout << "\t-p Measure energy-delayed product (measure joules if not provided)" << std::endl;
 	std::cout << "\t-e Comma seperated list of measured counters (default: all available)" << std::endl;
 	std::cout << "\t-r Number of runs (default: " << runs << ")" << std::endl;
@@ -56,16 +56,23 @@ void printHelpAndExit(char *progname, int exitcode = 0)
 	std::cout << "\t-i Sampling interval in ms (default: " << interval.count() << ")" << std::endl;
 	std::cout << "\t-b Start measurement N ms before worker creation (negative values will delay start)" << std::endl;
 	std::cout << "\t-a Continue measurement N ms after worker exited" << std::endl;
+	std::cout << std::endl;
+	std::cout << "\t--header If continuously printing, print the counter names before each run" << std::endl;
 	exit(exitcode);
 }
 
 // --------------------------------------------------------------
 
+enum Longopt {header = 256};
+static const struct option longopts[] = {
+	{"header", no_argument, NULL, header},
+	{0, 0, 0, 0}
+};
 
 void readProgArgs(int argc, char *argv[])
 {
 	int c;
-	while ((c = getopt (argc, argv, "hlcnpe:r:d:i:b:a:")) != -1) {
+	while ((c = getopt_long (argc, argv, "hlcnpe:r:d:i:b:a:", longopts, NULL)) != -1) {
 		switch (c) {
 			case 'h':
 			case '?':
@@ -73,9 +80,6 @@ void readProgArgs(int argc, char *argv[])
 				break;
 			case 'c':
 				continuous_print_flag = true;
-				break;
-			case 'n':
-				continuous_header_flag = true;
 				break;
 			case 'p':
 				energy_delayed_product = true;
@@ -104,6 +108,9 @@ void readProgArgs(int argc, char *argv[])
 				break;
 			case 'l':
 				print_counter_list = true;
+				break;
+			case header:
+				continuous_header_flag = true;
 				break;
 			default:
 				printHelpAndExit(argv[0], 1);
