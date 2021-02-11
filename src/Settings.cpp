@@ -63,8 +63,11 @@ void printHelpAndExit(char *progname, int exitcode = 0)
 
 // --------------------------------------------------------------
 
-enum Longopt {header = 256};
-static const struct option longopts[] = {
+enum Longopt {
+	header = 256
+};
+
+static struct option longopts[] = {
 	{"header", no_argument, NULL, header},
 	{0, 0, 0, 0}
 };
@@ -72,7 +75,7 @@ static const struct option longopts[] = {
 void readProgArgs(int argc, char *argv[])
 {
 	int c;
-	while ((c = getopt_long (argc, argv, "hlcnpe:r:d:i:b:a:", longopts, NULL)) != -1) {
+	while ((c = getopt_long (argc, argv, "hlcpe:r:d:i:b:a:", longopts, NULL)) != -1) {
 		switch (c) {
 			case 'h':
 			case '?':
