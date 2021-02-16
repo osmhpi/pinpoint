@@ -18,6 +18,8 @@ struct SamplerDetail
 	std::atomic<bool> startable;
 	std::atomic<bool> done;
 
+	std::string csv_header = "";
+
 	long ticks;
 
 	SamplerDetail(std::chrono::milliseconds sampling_interval):
@@ -30,7 +32,7 @@ struct SamplerDetail
 	}
 };
 
-Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & counterOrAliasNames, bool continuous_print_flag) :
+Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & counterOrAliasNames, bool continuous_print_flag, bool continuous_header_flag) :
 	m_detail(new SamplerDetail(interval))
 {
 	counters.reserve(counterOrAliasNames.size());
@@ -45,6 +47,11 @@ Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::stri
 
 	std::function<void()> atick  = [this]{accumulate_tick();};
 	std::function<void()> cptick = [this]{continuous_print_tick();};
+
+	if (continuous_print_flag && continuous_header_flag) {
+		for (auto & s : counterOrAliasNames) m_detail->csv_header += s + ",";
+		m_detail->csv_header.back() = '\n';
+	}
 
 	m_detail->worker = std::thread([=]{ run(
 		continuous_print_flag ? cptick : atick
@@ -87,6 +94,8 @@ void Sampler::run(std::function<void()> tick)
 {
 	std::unique_lock<std::mutex> lk(m_detail->start_mutex);
 	m_detail->start_signal.wait(lk, [this]{ return m_detail->startable.load(); });
+
+	fputs(m_detail->csv_header.c_str(), stdout);
 
 	while (!m_detail->done.load()) {
 		// FIXME: tiny skid by scheduling + now(). Global start instead?

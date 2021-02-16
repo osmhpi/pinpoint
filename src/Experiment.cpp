@@ -190,7 +190,7 @@ void Experiment::printResult()
 
 void Experiment::run_single()
 {
-	Sampler sampler(settings::interval, settings::counters, settings::continuous_print_flag);
+	Sampler sampler(settings::interval, settings::counters, settings::continuous_print_flag, settings::continuous_header_flag);
 
 	if (settings::before.count() > 0) {
 		sampler.start();
