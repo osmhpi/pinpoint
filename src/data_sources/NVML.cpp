@@ -181,10 +181,12 @@ Aliases NVML::possibleAliases()
 {
 	Aliases aliases;
 
-	for (auto device: NVMLDetail::validEvents)
-	{
-		// TODO clarify naming convention of aliases (GPU, GPU_X, GPU_NVML_.. ??)
-		aliases[std::string("GPU_") + std::to_string(device.second)] = device.first;
+	// With multiple GPUs we favor using the nvml:-prefix over Aliases
+	if (NVMLDetail::validEvents.size() == 1) {
+		for (auto device: NVMLDetail::validEvents)
+		{
+			aliases["GPU"] = device.first;
+		}
 	}
 
 	return aliases;
@@ -192,6 +194,7 @@ Aliases NVML::possibleAliases()
 
 NVML::~NVML()
 {
+	;;
 }
 
 PINPOINT_REGISTER_DATA_SOURCE(NVML)
