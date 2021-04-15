@@ -36,7 +36,7 @@ For more details, refer to our publication:
 
 ### Building
 
-To get started you need `cmake` installed, and a C++14-compatible compiler.
+To get started, you need `cmake` installed and a C++14-compatible compiler.
 
 ```
 git clone https://github.com/osmhpi/pinpoint
