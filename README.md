@@ -23,12 +23,30 @@ The interface is to some extent inspired by `perf stat`.
 		-i Sampling interval in ms (default: 500)
 		-b Start measurement N ms before worker creation (negative values will delay start)
 		-a Continue measurement N ms after worker exited
+		
+		--header If continuously printing, print the counter names before each run
 
 Use this tool if you want to start/stop your measurements with your program, or test your implementation of a new data source for power measurements.
 
 While this user-space tool has no third-party dependencies, future work might move its functionality and power sources to [libpapi](https://icl.utk.edu/papi/) or create virtual [`perf`](https://perf.wiki.kernel.org) events to provide better integration with other tools.
 
-### Examples
+For more details, refer to our publication:
+
+> S. Köhler, B. Herzog, T. Hönig, L. Wenzel, M. Plauth, J. Nolte, A. Polze, and W. Schröder-Preikschat, "Pinpoint the Joules: Unifying Runtime-Support for Energy Measurements on Heterogeneous Systems," _2020 IEEE/ACM International Workshop on Runtime and Operating Systems for Supercomputers (ROSS)_, GA, USA, 2020, pp. 31-40, [doi: 10.1109/ROSS51935.2020.00009.](https://ieeexplore.ieee.org/document/9307947)
+
+### Building
+
+To get started you need `cmake` installed, and a C++14-compatible compiler.
+
+```
+git clone https://github.com/osmhpi/pinpoint
+mkdir pinpoint/build
+cd pinpoint/build
+cmake ..
+make -j
+```
+
+### Usage
 
 #### Basic Example
 
