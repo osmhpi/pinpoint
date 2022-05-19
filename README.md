@@ -7,7 +7,7 @@ At the moment the following platforms are supported:
 * 3-channel INA3221 on NVIDIA Jetson TX2 boards
 * 3-channel INA3221 on NVIDIA Jetson AGX Xavier boards
 * Microchip MCP39F511N (for external power measurements)
-* RAPL on x86_64 platforms (Linux and macOS)
+* RAPL on x86_64 platforms (Linux, FreeBSD, and macOS)
 * Nvidia GPUs on Linux (via NVIDIA Management Library)
 
 The interface is to some extent inspired by `perf stat`.
