@@ -126,5 +126,5 @@ void Sampler::continuous_print_tick()
 		buf[pos - 1] = ',';
 	}
 	buf[pos - 1] = '\0';
-	puts(buf);
+	std::cout << buf << std::endl;
 }
