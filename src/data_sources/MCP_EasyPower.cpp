@@ -37,7 +37,8 @@ struct OpenMCPDevice
 	{
 		// FIXME: Possible data race (though atm not called from different threads)
 		if (has_read[channel]) {
-			f511_get_power(&data[0], &data[1], fd);
+			if (0 != f511_get_power(&data[0], &data[1], fd))
+				throw std::runtime_error("Cannot get power from MCP.");
 			has_read[0] = false;
 			has_read[1] = false;
 		}
