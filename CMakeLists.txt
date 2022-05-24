@@ -6,11 +6,15 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
+option(ENABLE_NVML "Build with NVML support (if available)" ON)
+
 include_directories(.)
 include_directories(src)
 find_package(Threads)
 
-find_package(NVML)
+if(ENABLE_NVML)
+	find_package(NVML)
+endif(ENABLE_NVML)
 
 if(NVML_FOUND)
 	include_directories(${NVML_INCLUDE_DIRS})
