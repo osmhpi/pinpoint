@@ -34,6 +34,7 @@ add_executable(pinpoint
 	src/data_sources/RAPL.cpp
 	src/data_sources/mcp_com.c
 	src/data_sources/NVML.cpp
+	src/data_sources/A64FX.cpp
 	src/main.cpp
 )
 
