@@ -9,6 +9,7 @@ At the moment the following platforms are supported:
 * Microchip MCP39F511N (for external power measurements)
 * RAPL on x86_64 platforms (Linux, FreeBSD, and macOS)
 * Nvidia GPUs on Linux (via NVIDIA Management Library)
+* Fujitsu A64FX CPUs on Linux
 
 The interface is to some extent inspired by `perf stat`.
 

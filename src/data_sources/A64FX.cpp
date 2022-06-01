@@ -4,8 +4,9 @@
 #include <cstring>
 #include <fstream>
 #include <map>
+#include <algorithm>
 
-#if defined(__arch64__) && defined(__linux__)
+#if defined(__aarch64__) && defined(__linux__)
 
 #include <linux/perf_event.h>
 #include <sys/syscall.h>
@@ -115,7 +116,7 @@ A64FX::A64FX(const std::string & name) :
 	EnergyDataSource(),
 	m_detail(new A64FXDetail)
 {
-	const auto & event_info = A64FX::validEvents[name];
+	const auto & event_info = A64FXDetail::validEvents[name];
 	m_detail->joules_per_tick = event_info.joules_per_tick;
 
 	memset(&m_detail->attr, 0, sizeof(m_detail->attr));
