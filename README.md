@@ -21,7 +21,7 @@ The interface is to some extent inspired by `perf stat`.
 		-e Comma seperated list of measured devices (default: all)
 		-r Number of runs (default: 1)
 		-d Delay between runs in ms (default: 0)
-		-i Sampling interval in ms (default: 500)
+		-i Sampling interval in ms (default: 50)
 		-b Start measurement N ms before worker creation (negative values will delay start)
 		-a Continue measurement N ms after worker exited
 		
