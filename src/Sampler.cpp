@@ -137,8 +137,9 @@ void Sampler::continuous_print_tick()
 	}
 	buf[pos - 1] = '\0';
 	if (settings::countinous_timestamp_flag) {
-		std::chrono::duration<float, std::ratio<1>> s_since_epoch = timestamp.time_since_epoch();
-		std::cout << s_since_epoch.count() << ",";
+		// I wanted to use duration<float, ratio<1>>, but this resulted in weird constant epoch
+		auto ms_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(timestamp.time_since_epoch()).count();
+		std::cout << ms_since_epoch * 0.001 << ",";
 	}
 	std::cout << buf << std::endl;
 }
