@@ -12,13 +12,18 @@ struct Sample
 	timestamp_t timestamp;
 	ValueT value;
 
+	static timestamp_t now()
+	{
+		return ClockT::now();
+	}
+
 	Sample()
 	{
 		;;
 	}
 
 	Sample(const ValueT & _value) :
-		timestamp(ClockT::now()),
+		timestamp(Sample::now()),
 		value(_value)
 	{
 		;;

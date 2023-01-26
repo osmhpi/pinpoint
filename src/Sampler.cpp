@@ -1,9 +1,11 @@
 #include "Sampler.h"
+#include "Settings.h"
 #include "Registry.h"
 
 #include <algorithm>
 #include <atomic>
 #include <condition_variable>
+#include <iomanip>
 #include <thread>
 
 
@@ -51,6 +53,10 @@ Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::stri
 	if (continuous_print_flag && continuous_header_flag) {
 		for (auto & s : counterOrAliasNames) m_detail->csv_header += s + ",";
 		m_detail->csv_header.back() = '\n';
+	}
+
+	if (continuous_print_flag && settings::countinous_timestamp_flag) {
+		std::cout << std::fixed << std::setprecision(4);
 	}
 
 	m_detail->worker = std::thread([=]{ run(
@@ -119,12 +125,20 @@ void Sampler::continuous_print_tick()
 	size_t avail = sizeof(buf);
 	size_t pos = 0;
 	size_t nbytes;
+	PowerSample::timestamp_t timestamp = PowerSample::now();
+
 	for (auto & dev: counters) {
-		nbytes = dev->read_mW_string(buf + pos, avail);
+		const PowerDataSource::time_and_strlen ts = dev->read_mW_string(buf + pos, avail);
+		timestamp = std::max(timestamp, ts.first);
+		nbytes = ts.second;
 		pos += nbytes;
 		avail -= nbytes;
 		buf[pos - 1] = ',';
 	}
 	buf[pos - 1] = '\0';
+	if (settings::countinous_timestamp_flag) {
+		std::chrono::duration<float, std::ratio<1>> s_since_epoch = timestamp.time_since_epoch();
+		std::cout << s_since_epoch.count() << ",";
+	}
 	std::cout << buf << std::endl;
 }

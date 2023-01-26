@@ -20,13 +20,13 @@ public:
 	static Aliases possibleAliases();
 
 	virtual ~JetsonCounter();
-	virtual int read_mW_string(char *buf, size_t buflen);
+	virtual time_and_strlen read_mW_string(char *buf, size_t buflen);
 
 	virtual PowerSample read()
 	{
 		char buf[255];
-		read_mW_string(buf, sizeof(buf));
-		return PowerSample(units::power::milliwatt_t(atoi(buf)));
+		const PowerDataSource::time_and_strlen ts = read_mW_string(buf, sizeof(buf));
+		return PowerSample(ts.first, units::power::milliwatt_t(atoi(buf)));
 	}
 
 private:

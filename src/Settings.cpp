@@ -10,6 +10,7 @@ namespace settings {
 
 bool continuous_print_flag = false;
 bool continuous_header_flag = false;
+bool countinous_timestamp_flag = false;
 bool energy_delayed_product = false;
 bool print_counter_list = false;
 
@@ -45,7 +46,7 @@ std::vector<std::string> str_split(const std::string & text)
 
 void printHelpAndExit(char *progname, int exitcode = 0)
 {
-	std::cout << "Usage: " << progname << " -h|[-c [--header]|-p] [-e dev1,dev2,...] ([-r|-d|-i|-b|-a] N)* [--] workload [args]" << std::endl;
+	std::cout << "Usage: " << progname << " -h|[-c [--header] [--timestamp]|-p] [-e dev1,dev2,...] ([-r|-d|-i|-b|-a] N)* [--] workload [args]" << std::endl;
 	std::cout << "\t-h Print this help and exit" << std::endl;
 	std::cout << "\t-l Print a list of available counters and exit" << std::endl;
 	std::cout << "\t-c Continuously print power levels (mW) to stdout (skip energy stats)" << std::endl;
@@ -58,17 +59,20 @@ void printHelpAndExit(char *progname, int exitcode = 0)
 	std::cout << "\t-a Continue measurement N ms after worker exited" << std::endl;
 	std::cout << std::endl;
 	std::cout << "\t--header If continuously printing, print the counter names before each run" << std::endl;
+	std::cout << "\t--timestamp If continuously printing, print the maximum timestamp (timer epoch) of each sample group" << std::endl;
 	exit(exitcode);
 }
 
 // --------------------------------------------------------------
 
 enum Longopt {
-	header = 256
+	header = 256,
+	timestamp = 257,
 };
 
 static struct option longopts[] = {
 	{"header", no_argument, NULL, header},
+	{"timestamp", no_argument, NULL, timestamp},
 	{0, 0, 0, 0}
 };
 
@@ -114,6 +118,9 @@ void readProgArgs(int argc, char *argv[])
 				break;
 			case header:
 				continuous_header_flag = true;
+				break;
+			case timestamp:
+				countinous_timestamp_flag = true;
 				break;
 			default:
 				printHelpAndExit(argv[0], 1);

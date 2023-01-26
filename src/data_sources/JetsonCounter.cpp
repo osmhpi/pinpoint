@@ -109,14 +109,14 @@ JetsonCounter::~JetsonCounter()
 	delete  m_detail;
 }
 
-int JetsonCounter::read_mW_string(char *buf, size_t buflen)
+PowerDataSource::time_and_strlen JetsonCounter::read_mW_string(char *buf, size_t buflen)
 {
 	size_t pos;
 	rewind(m_detail->fp);
 	pos = fread(buf, sizeof(char), buflen, m_detail->fp);
 	if (pos > 0)
 		buf[pos-1] = '\0';
-	return pos;
+	return std::make_pair(PowerSample::now(), pos);
 }
 
 PINPOINT_REGISTER_DATA_SOURCE(JetsonCounter)
