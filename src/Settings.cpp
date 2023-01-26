@@ -22,6 +22,8 @@ std::chrono::milliseconds before(0);
 std::chrono::milliseconds after(0);
 char **workload_and_args = nullptr;
 
+uid_t uid = settings::UID_NOT_SET;
+
 // --------------------------------------------------------------
 
 template<char delimiter>
@@ -57,6 +59,7 @@ void printHelpAndExit(char *progname, int exitcode = 0)
 	std::cout << "\t-i Sampling interval in ms (default: " << interval.count() << ")" << std::endl;
 	std::cout << "\t-b Start measurement N ms before worker creation (negative values will delay start)" << std::endl;
 	std::cout << "\t-a Continue measurement N ms after worker exited" << std::endl;
+	std::cout << "\t-U Run the workload under this uid" << std::endl;
 	std::cout << std::endl;
 	std::cout << "\t--header If continuously printing, print the counter names before each run" << std::endl;
 	std::cout << "\t--timestamp If continuously printing, print the maximum timestamp (timer epoch) of each sample group" << std::endl;
@@ -79,7 +82,7 @@ static struct option longopts[] = {
 void readProgArgs(int argc, char *argv[])
 {
 	int c;
-	while ((c = getopt_long (argc, argv, "hlcpe:r:d:i:b:a:", longopts, NULL)) != -1) {
+	while ((c = getopt_long (argc, argv, "hlcpe:r:d:i:b:a:U:", longopts, NULL)) != -1) {
 		switch (c) {
 			case 'h':
 			case '?':
@@ -115,6 +118,9 @@ void readProgArgs(int argc, char *argv[])
 				break;
 			case 'l':
 				print_counter_list = true;
+				break;
+			case 'U':
+				uid = atoi(optarg);
 				break;
 			case header:
 				continuous_header_flag = true;

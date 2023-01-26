@@ -25,6 +25,9 @@ extern std::chrono::milliseconds before;
 extern std::chrono::milliseconds after;
 extern char **workload_and_args;
 
+enum { UID_NOT_SET = -1 };
+extern uid_t uid;
+
 // Inferred value
 extern std::string unit;
 

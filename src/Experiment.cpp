@@ -203,6 +203,8 @@ void Experiment::run_single()
 		sampler.start(std::max(-settings::before, std::chrono::milliseconds(0)));
 		waitpid(workload, NULL, 0);
 	} else {
+		if (settings::uid != settings::UID_NOT_SET)
+			setuid(settings::uid);
 		execvp(settings::workload_and_args[0], settings::workload_and_args);
 	}
 
