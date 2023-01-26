@@ -34,7 +34,7 @@ struct SamplerDetail
 	}
 };
 
-Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & counterOrAliasNames, bool continuous_print_flag, bool continuous_header_flag) :
+Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & counterOrAliasNames) :
 	m_detail(new SamplerDetail(interval))
 {
 	counters.reserve(counterOrAliasNames.size());
@@ -50,17 +50,17 @@ Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::stri
 	std::function<void()> atick  = [this]{accumulate_tick();};
 	std::function<void()> cptick = [this]{continuous_print_tick();};
 
-	if (continuous_print_flag && continuous_header_flag) {
+	if (settings::continuous_print_flag && settings::continuous_header_flag) {
 		for (auto & s : counterOrAliasNames) m_detail->csv_header += s + ",";
 		m_detail->csv_header.back() = '\n';
 	}
 
-	if (continuous_print_flag && settings::countinous_timestamp_flag) {
+	if (settings::continuous_print_flag && settings::countinous_timestamp_flag) {
 		std::cout << std::fixed << std::setprecision(4);
 	}
 
 	m_detail->worker = std::thread([=]{ run(
-		continuous_print_flag ? cptick : atick
+		settings::continuous_print_flag ? cptick : atick
 	); });
 }
 
@@ -125,7 +125,7 @@ void Sampler::continuous_print_tick()
 	size_t avail = sizeof(buf);
 	size_t pos = 0;
 	size_t nbytes;
-	PowerSample::timestamp_t timestamp = PowerSample::now();
+	PowerSample::timestamp_t timestamp;
 
 	for (auto & dev: counters) {
 		const PowerDataSource::time_and_strlen ts = dev->read_mW_string(buf + pos, avail);

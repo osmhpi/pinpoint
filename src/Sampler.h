@@ -14,7 +14,7 @@ struct Sampler
 	using result_t = std::vector<units::energy::joule_t>;
 	std::vector<PowerDataSourcePtr> counters;
 
-	Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & counterOrAliasNames, bool continuous_print_flag = false, bool continuous_header_flag = false);
+	Sampler(std::chrono::milliseconds interval, const std::vector<std::string> & counterOrAliasNames);
 	virtual ~Sampler();
 
 	void start(std::chrono::milliseconds delay = std::chrono::milliseconds(0));
