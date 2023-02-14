@@ -14,6 +14,9 @@ public:
 		std::vector<std::string> availableCounters;
 		std::function<PowerDataSourcePtr(const std::string &)> openCounter;
 
+		// Postpone registration to Registry::setup
+		std::function<void(SourceInfo & si)> setup;
+
 		bool available() const
 		{
 			return !availableCounters.empty();
@@ -26,16 +29,19 @@ public:
 	static int registerSource()
 	{
 		SourceInfo sourceInfo;
-		sourceInfo.availableCounters = DataSourceT::detectAvailableCounters();
+
+		sourceInfo.setup = [](SourceInfo & si){
+			si.availableCounters = DataSourceT::detectAvailableCounters();
+			for (const auto & alias: DataSourceT::possibleAliases()) {
+				registerAlias(alias.first, DataSourceT::sourceName(), alias.second);
+			}
+		};
+
 		sourceInfo.openCounter = [](const std::string & counterName){
 			return DataSourceT::openCounter(counterName);
 		};
-		auto res = registerSource(DataSourceT::sourceName(), sourceInfo);
 
-		for (const auto & alias: DataSourceT::possibleAliases()) {
-			registerAlias(alias.first, DataSourceT::sourceName(), alias.second);
-		}
-		return res;
+		return registerSource(DataSourceT::sourceName(), sourceInfo);
 	}
 
 	static std::vector<std::string> availableCounters();

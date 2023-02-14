@@ -11,7 +11,10 @@ static std::map<std::string,std::pair<std::string,std::string>> s_aliases;
 
 void Registry::setup()
 {
-	;;
+	for (auto & src: s_sources) {
+		SourceInfo & si = src.second;
+		si.setup(si);
+	}
 }
 
 /**************************************************************/
