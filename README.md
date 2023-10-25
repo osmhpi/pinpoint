@@ -10,6 +10,7 @@ At the moment the following platforms are supported:
 * RAPL on x86_64 platforms (Linux, FreeBSD, and macOS)
 * Nvidia GPUs on Linux (via NVIDIA Management Library)
 * Fujitsu A64FX CPUs on Linux
+* Apple SOC (M1,M2,..-processors) via IOReport (macOS)
 
 The interface is to some extent inspired by `perf stat`.
 
