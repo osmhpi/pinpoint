@@ -111,11 +111,10 @@ public:
 		std::replace(name.begin(), name.end(), ' ', '_');
 		return name;
 	}
-	
-	
+
 	M1nPointSharedDetail()
 	{ }
-	
+
 	~M1nPointSharedDetail()
 	{
 		for (auto & name_ref: counter_to_channel) {
@@ -123,17 +122,16 @@ public:
 				CFRelease(name_ref.second);
 		}
 	}
-	
+
 	CFMutableDictionaryPtr desired_channels;
 	std::map<std::string, uint64_t> last_values;
-	
+
 	std::shared_ptr<IOReportSubscription> active_subscription;
 	CFMutableDictionaryPtr subscribed_channels;
 	CFMutableDictionaryPtr initial_samples;
 
 	std::map<std::string, IOReportChannelRef> counter_to_channel;
-	
-	
+
 	// I hate this function. It should only be called once per experiment run or for the entire progam
 	// PinPoint should be adapted to call a source-class-wide "start now, for real" function on registered sources
 	void update_subscriptions()
@@ -161,6 +159,15 @@ public:
 		}
 	}
 	
+	void add_available_channels(CFMutableDictionaryPtr channels)
+	{
+		IOReportIterate(channels.get(), (ioreportiterateblock) ^(IOReportChannelRef ch) {
+			CFRetain(ch);
+			counter_to_channel[buildCounterName(ch)] = ch;
+
+			return kIOReportIterOk;
+		});
+	}
 	
 private:
 	
@@ -232,17 +239,8 @@ AppleM::~AppleM()
 
 std::vector<std::string> AppleM::detectAvailableCounters()
 {
-	auto channels = cf_shared(IOReportCopyChannelsInGroup(@"PMP", @"Energy Counters", 0, 0, 0));
-
-	IOReportIterate(channels.get(), (ioreportiterateblock) ^(IOReportChannelRef ch) {
-
-		auto identifier = m1npoint.buildCounterName(ch);
-		
-		CFRetain(ch);
-		m1npoint.counter_to_channel[identifier] = ch;
-			
-		return kIOReportIterOk;
-	});
+	m1npoint.add_available_channels(cf_shared(IOReportCopyChannelsInGroup(@"PMP", @"Energy Counters", 0, 0, 0)));
+	m1npoint.add_available_channels(cf_shared(IOReportCopyChannelsInGroup(@"PMP", @"DRAM Energy", 0, 0, 0)));
 
 	std::vector<std::string> result;
 	for (const auto & counter_channel: m1npoint.counter_to_channel) {
