@@ -35,9 +35,9 @@ extern uint64_t IOReportSimpleGetIntegerValue(IOReportChannelRef ch, void *);
 
 extern CFMutableDictionaryRef IOReportCopyChannelsInGroup(CFStringRef, CFStringRef, uint64_t, uint64_t, uint64_t);
 
-
-extern CFStringRef IOReportChannelGetSubGroup(CFDictionaryRef);
-extern CFStringRef IOReportChannelGetChannelName(CFDictionaryRef);
+extern pid_t IOReportChannelGetChannelID(IOReportChannelRef ch);
+extern CFStringRef IOReportChannelGetSubGroup(CFDictionaryRef ch);
+extern CFStringRef IOReportChannelGetChannelName(CFDictionaryRef ch);
 
 
 typedef int IOReportIterationResult;
@@ -143,7 +143,7 @@ public:
 	}
 
 	CFMutableDictionaryPtr desired_channels;
-	std::map<std::string, uint64_t> last_values;
+	std::map<pid_t, uint64_t> last_values;
 
 	std::shared_ptr<IOReportSubscription> active_subscription;
 	CFMutableDictionaryPtr subscribed_channels;
@@ -170,7 +170,7 @@ public:
 		auto deltas = cf_shared(IOReportCreateSamplesDelta(initial_samples.get(), current_samples.get(), NULL));
 		if (deltas) {
 			IOReportIterate(deltas.get(), (ioreportiterateblock) ^(IOReportSampleRef sample) {
-				auto key = buildCounterName(sample);
+				auto key = IOReportChannelGetChannelID(sample);
 				last_values[key] = IOReportSimpleGetIntegerValue(sample, NULL);
 
 				return kIOReportIterOk;
@@ -216,7 +216,7 @@ struct AppleMDetail
 	// Except for the kOutdated hack, so intertwined with last_value
 	static const uint64_t kOutdated;
 
-	std::string last_value_key;
+	pid_t last_value_key;
 };
 const uint64_t AppleMDetail::kOutdated = std::numeric_limits<uint64_t>::max();
 
@@ -225,7 +225,8 @@ const uint64_t AppleMDetail::kOutdated = std::numeric_limits<uint64_t>::max();
 AppleM::AppleM(const std::string & key) :
 	m_detail(new AppleMDetail)
 {
-	auto channel_wrap = cf_shared(channel2channel_list(m1npoint.counter_to_channel[key]));
+	auto channel = m1npoint.counter_to_channel[key];
+	auto channel_wrap = cf_shared(channel2channel_list(channel));
 
 	if (!m1npoint.desired_channels) {
 		m1npoint.desired_channels = channel_wrap;
@@ -234,14 +235,16 @@ AppleM::AppleM(const std::string & key) :
 			throw std::runtime_error("IOReportMergeChannels failed. Most likely the undocumented API changed :(");
 	}
 	
-	m_detail->last_value_key = key;
+	m_detail->last_value_key = IOReportChannelGetChannelID(channel);
 	m1npoint.last_values[m_detail->last_value_key] = AppleMDetail::kOutdated;
 	m1npoint.update_subscriptions();
 }
 
 EnergySample AppleM::read_energy()
 {
-	if (m1npoint.last_values[m_detail->last_value_key]  == AppleMDetail::kOutdated)
+	// Non-reentrent. We expect to be subsequently called from the same sampling thread
+
+	if (m1npoint.last_values[m_detail->last_value_key] == AppleMDetail::kOutdated)
 		m1npoint.read_and_update_all_open_sources();
 		
 	units::energy::millijoule_t e(m1npoint.last_values[m_detail->last_value_key]);
