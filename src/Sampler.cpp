@@ -62,6 +62,8 @@ Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::stri
 	m_detail->worker = std::thread([=]{ run(
 		settings::continuous_print_flag ? cptick : atick
 	); });
+
+	Registry::callInitializeExperimentsOnOpenSources();
 }
 
 Sampler::~Sampler()

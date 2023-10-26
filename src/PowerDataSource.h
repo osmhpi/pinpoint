@@ -42,6 +42,10 @@ public:
 		return std::make_pair(sample.timestamp, strlen);
 	}
 
+	// Called once per data source which have open counters, at start of each experiment (after counter creation)
+	static void initializeExperiment()
+	{ }
+
 private:
 	PowerDataSourceDetail *m_detail;
 };

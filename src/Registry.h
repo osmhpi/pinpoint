@@ -16,11 +16,14 @@ public:
 
 		// Postpone registration to Registry::setup
 		std::function<void(SourceInfo & si)> setup;
+		std::function<void()> initializeExperiment;
 
 		bool available() const
 		{
 			return !availableCounters.empty();
 		}
+
+		bool has_at_least_one_open_counter;
 	};
 
 	static void setup();
@@ -30,11 +33,13 @@ public:
 	{
 		SourceInfo sourceInfo;
 
+		sourceInfo.has_at_least_one_open_counter = false;
 		sourceInfo.setup = [](SourceInfo & si){
 			si.availableCounters = DataSourceT::detectAvailableCounters();
 			for (const auto & alias: DataSourceT::possibleAliases()) {
 				registerAlias(alias.first, DataSourceT::sourceName(), alias.second);
 			}
+			si.initializeExperiment = [](){ DataSourceT::initializeExperiment(); };
 		};
 
 		sourceInfo.openCounter = [](const std::string & counterName){
@@ -47,6 +52,8 @@ public:
 	static std::vector<std::string> availableCounters();
 	static std::vector<std::pair<std::string,std::string>> availableAliases();
 	static PowerDataSourcePtr openCounter(const std::string & name);
+
+	static void callInitializeExperimentsOnOpenSources();
 
 private:
 	static int registerSource(const std::string & sourceName, const SourceInfo & sourceInfo);

@@ -151,9 +151,7 @@ public:
 
 	std::map<std::string, IOReportChannelRef> counter_to_channel;
 
-	// I hate this function. It should only be called once per experiment run or for the entire progam
-	// PinPoint should be adapted to call a source-class-wide "start now, for real" function on registered sources
-	void update_subscriptions()
+	void initializeExperiment()
 	{
 		CFMutableDictionaryRef _sub_chans;
 		active_subscription = cf_shared(IOReportCreateSubscription(NULL, desired_channels.get(), &_sub_chans, 0, 0));
@@ -161,7 +159,8 @@ public:
 			throw std::runtime_error("Cannot create IOReport subscription");
 		}
 		subscribed_channels = cf_shared(_sub_chans);
-		initialize_experiment();
+
+		initial_samples = _pull_raw_samples();
 	}
 
 	void read_and_update_all_open_sources()
@@ -198,11 +197,6 @@ private:
 		}
 		return res;
 	}
-	
-	void initialize_experiment()
-	{
-		initial_samples = _pull_raw_samples();
-	}
 };
 
 static M1nPointSharedDetail m1npoint;
@@ -237,7 +231,6 @@ AppleM::AppleM(const std::string & key) :
 	
 	m_detail->last_value_key = IOReportChannelGetChannelID(channel);
 	m1npoint.last_values[m_detail->last_value_key] = AppleMDetail::kOutdated;
-	m1npoint.update_subscriptions();
 }
 
 EnergySample AppleM::read_energy()
@@ -282,6 +275,11 @@ PowerDataSourcePtr AppleM::openCounter(const std::string & counterName)
 Aliases AppleM::possibleAliases()
 {
 	return Aliases();
+}
+
+void AppleM::initializeExperiment()
+{
+	m1npoint.initializeExperiment();
 }
 
 PINPOINT_REGISTER_DATA_SOURCE(AppleM)

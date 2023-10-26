@@ -22,6 +22,8 @@ public:
 
 	virtual ~AppleM();
 
+	static void initializeExperiment();
+
 private:
 	AppleM(const std::string & key);
 

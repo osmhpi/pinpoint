@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <map>
 #include <utility>
+#include <set>
 
 static std::map<std::string,Registry::SourceInfo> s_sources;
 static std::map<std::string,std::pair<std::string,std::string>> s_aliases;
@@ -69,7 +70,19 @@ PowerDataSourcePtr Registry::openCounter(const std::string & name)
 
 	PowerDataSourcePtr dataSource = s_sources[sourceName].openCounter(counterName);
 	dataSource->setName(name);
+	s_sources[sourceName].has_at_least_one_open_counter = true;
+
 	return dataSource;
+}
+
+void Registry::callInitializeExperimentsOnOpenSources()
+{
+	for (auto & name_si: s_sources) {
+		if (name_si.second.has_at_least_one_open_counter) {
+			name_si.second.has_at_least_one_open_counter = false;
+			name_si.second.initializeExperiment();
+		}
+	}
 }
 
 bool Registry::isAvailable(const std::string & sourceName, const std::string & counterName)
