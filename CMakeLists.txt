@@ -18,7 +18,7 @@ else()
   set(APPLE_SILICON FALSE)
 endif()
 
-set(APPLE_IOREPORT_LIBRARIES "-lIOReport -framework Foundation -framework IOKit")
+set(APPLE_IOREPORT_LIBRARIES "-lIOReport -framework CoreFoundation")
 
 if(ENABLE_NVML)
 	find_package(NVML)
@@ -39,7 +39,6 @@ set(SOURCE_FILES
 	src/Sampler.cpp
 	src/Settings.cpp
 	src/data_sources/A64FX.cpp
-	src/data_sources/AppleM.mm
 	src/data_sources/INA226.cpp
 	src/data_sources/JetsonCounter.cpp
 	src/data_sources/MCP_EasyPower.cpp
@@ -51,7 +50,7 @@ set(SOURCE_FILES
 
 if(APPLE_SILICON)
 	list(APPEND SOURCE_FILES
-		src/data_sources/AppleM.mm
+		src/data_sources/AppleM.cpp
 	)
 endif(APPLE_SILICON)
 

@@ -7,7 +7,7 @@ extern "C" {
 
 /* IOReport is part of private framework. Headers can be found all over the internet. Types are partly guessed. */
 
-#import <Foundation/Foundation.h>
+#import <CoreFoundation/CoreFoundation.h>
 
 enum {
 	kIOReportIterOk,
@@ -33,12 +33,11 @@ extern uint64_t IOReportSimpleGetIntegerValue(IOReportChannelRef ch, void *);
 
 /* based on usage in pmset.c */
 
-extern CFMutableDictionaryRef IOReportCopyChannelsInGroup(NSString*, NSString*, uint64_t, uint64_t, uint64_t);
+extern CFMutableDictionaryRef IOReportCopyChannelsInGroup(CFStringRef, CFStringRef, uint64_t, uint64_t, uint64_t);
 
 
-/* TODO: replace with CFString, get rid of Objective-C */
-extern NSString* IOReportChannelGetSubGroup(CFDictionaryRef);
-extern NSString* IOReportChannelGetChannelName(CFDictionaryRef);
+extern CFStringRef IOReportChannelGetSubGroup(CFDictionaryRef);
+extern CFStringRef IOReportChannelGetChannelName(CFDictionaryRef);
 
 
 typedef int IOReportIterationResult;
@@ -99,15 +98,35 @@ static CFMutableDictionaryRef channel2channel_list(IOReportChannelRef channel)
 /***********************************************************************/
 
 
+std::string cfstr2stdstring(CFStringRef cfstr)
+{
+	if (cfstr == nullptr) {
+		return std::string();
+	}
+	
+	CFIndex length = CFStringGetLength(cfstr);
+	CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
+	std::vector<char> stringBytes(maxSize);
+	
+	if (CFStringGetCString(cfstr, stringBytes.data(), maxSize, kCFStringEncodingUTF8)) {
+		return std::string(stringBytes.data());
+	} else {
+		return std::string();
+	}
+}
+
 class M1nPointSharedDetail
 {
 public:
 	static std::string buildCounterName(IOReportChannelRef channel)
 	{
-		NSString* subgroup   = IOReportChannelGetSubGroup(channel);
-		NSString* chann_name = IOReportChannelGetChannelName(channel);
+		// IOReportChannelGetSubGroup etc do not retain ownership.
+		// The returned strings must not be released.
+		std::string name =
+			  cfstr2stdstring(IOReportChannelGetSubGroup(channel))
+			+ ":"
+			+ cfstr2stdstring(IOReportChannelGetChannelName(channel));
 		
-		std::string name = std::string([subgroup UTF8String]) + ":" + std::string([chann_name UTF8String]);
 		std::replace(name.begin(), name.end(), ' ', '_');
 		return name;
 	}
@@ -239,8 +258,8 @@ AppleM::~AppleM()
 
 std::vector<std::string> AppleM::detectAvailableCounters()
 {
-	m1npoint.add_available_channels(cf_shared(IOReportCopyChannelsInGroup(@"PMP", @"Energy Counters", 0, 0, 0)));
-	m1npoint.add_available_channels(cf_shared(IOReportCopyChannelsInGroup(@"PMP", @"DRAM Energy", 0, 0, 0)));
+	m1npoint.add_available_channels(cf_shared(IOReportCopyChannelsInGroup(CFSTR("PMP"), CFSTR("Energy Counters"), 0, 0, 0)));
+	m1npoint.add_available_channels(cf_shared(IOReportCopyChannelsInGroup(CFSTR("PMP"), CFSTR("DRAM Energy"), 0, 0, 0)));
 
 	std::vector<std::string> result;
 	for (const auto & counter_channel: m1npoint.counter_to_channel) {
