@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.5)
 
 project(pinpoint LANGUAGES CXX C)
 
+set(PINPOINT_EXECUTABLE_NAME ${CMAKE_PROJECT_NAME})
+set(PINPONT_LIBRARY_NAME     "lib${PINPOINT_EXECUTABLE_NAME}")
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
@@ -50,7 +53,6 @@ set(SOURCE_FILES
 	src/data_sources/NVML.cpp
 	src/data_sources/RAPL.cpp
 	src/data_sources/mcp_com.c
-	src/main.cpp
 )
 
 if(APPLE_SILICON)
@@ -59,18 +61,35 @@ if(APPLE_SILICON)
 	)
 endif(APPLE_SILICON)
 
-add_executable(pinpoint ${SOURCE_FILES})
+#####
+
+add_library(pinpoint_objects OBJECT ${SOURCE_FILES})
+
+add_library(${PINPONT_LIBRARY_NAME} SHARED $<TARGET_OBJECTS:pinpoint_objects>)
+set_target_properties(${PINPONT_LIBRARY_NAME} PROPERTIES OUTPUT_NAME ${PINPOINT_EXECUTABLE_NAME})
+
+
+add_executable(${PINPOINT_EXECUTABLE_NAME}
+	src/main.cpp
+)
+target_link_libraries(${PINPOINT_EXECUTABLE_NAME}  $<TARGET_OBJECTS:pinpoint_objects>)
 
 #####
 
-target_link_libraries(pinpoint ${CMAKE_THREAD_LIBS_INIT})
+set(ADDITIONAL_LIBRARIES)
+list(APPEND ADDITIONAL_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
 
 if(NVML_FOUND)
-	target_link_libraries(pinpoint ${NVML_LIBRARIES})
+	list(APPEND ADDITIONAL_LIBRARIES ${NVML_LIBRARIES})
 endif(NVML_FOUND)
 
 
 if(APPLE_SILICON)
 	message(STATUS "Detected Apple Silicon. Link IOReport")
-	target_link_libraries(pinpoint ${APPLE_IOREPORT_LIBRARIES})
+	list(APPEND ADDITIONAL_LIBRARIES ${APPLE_IOREPORT_LIBRARIES})
 endif(APPLE_SILICON)
+
+#####
+
+target_link_libraries(${PINPONT_LIBRARY_NAME} ${ADDITIONAL_LIBRARIES})
+target_link_libraries(${PINPOINT_EXECUTABLE_NAME} ${ADDITIONAL_LIBRARIES})
