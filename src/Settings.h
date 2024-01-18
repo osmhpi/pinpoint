@@ -28,6 +28,8 @@ extern char **workload_and_args;
 enum { UID_NOT_SET = -1 };
 extern uid_t uid;
 
+extern std::ostream & output_stream;
+
 // Inferred value
 extern std::string unit;
 

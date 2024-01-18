@@ -1,5 +1,6 @@
 #include "Settings.h"
 
+#include <fstream>
 #include <iostream>
 #include <iterator>
 #include <sstream>
@@ -23,6 +24,12 @@ std::chrono::milliseconds after(0);
 char **workload_and_args = nullptr;
 
 uid_t uid = settings::UID_NOT_SET;
+
+namespace _private {
+	static std::ofstream output_file;
+}
+
+std::ostream & output_stream = std::cerr;
 
 // --------------------------------------------------------------
 
@@ -59,6 +66,7 @@ void printHelpAndExit(char *progname, int exitcode = 0)
 	std::cout << "\t-i Sampling interval in ms (default: " << interval.count() << ")" << std::endl;
 	std::cout << "\t-b Start measurement N ms before worker creation (negative values will delay start)" << std::endl;
 	std::cout << "\t-a Continue measurement N ms after worker exited" << std::endl;
+	std::cout << "\t-o Output file (default: stderr)" << std::endl;
 	std::cout << "\t-U Run the workload under this uid" << std::endl;
 	std::cout << std::endl;
 	std::cout << "\t--header If continuously printing, print the counter names before each run" << std::endl;
@@ -82,7 +90,7 @@ static struct option longopts[] = {
 void readProgArgs(int argc, char *argv[])
 {
 	int c;
-	while ((c = getopt_long (argc, argv, "hlcpe:r:d:i:b:a:U:", longopts, NULL)) != -1) {
+	while ((c = getopt_long (argc, argv, "hlcpe:r:d:i:b:a:o:U:", longopts, NULL)) != -1) {
 		switch (c) {
 			case 'h':
 			case '?':
@@ -118,6 +126,14 @@ void readProgArgs(int argc, char *argv[])
 				break;
 			case 'l':
 				print_counter_list = true;
+				break;
+			case 'o':
+				_private::output_file.open(optarg);
+				if (!_private::output_file.is_open()) {
+					std::cerr << "Cannot open output file \"" << optarg << "\"" << std::endl;
+					exit(1);
+				}
+				output_stream.rdbuf(_private::output_file.rdbuf());
 				break;
 			case 'U':
 				uid = atoi(optarg);
