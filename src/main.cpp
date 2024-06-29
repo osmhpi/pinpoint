@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 		experiment.run();
 		experiment.printResult();
 	} catch (const std::exception & e) {
-		std::cerr << "[ERROR] " << e.what() << std::endl;
+		settings::output_stream << "[ERROR] " << e.what() << std::endl;
 		return 1;
 	}
 
