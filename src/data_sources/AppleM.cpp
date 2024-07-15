@@ -256,6 +256,11 @@ std::vector<std::string> AppleM::detectAvailableCounters()
 {
 	m1npoint.add_available_channels(cf_shared(IOReportCopyChannelsInGroup(CFSTR("PMP"), CFSTR("Energy Counters"), 0, 0, 0)));
 	m1npoint.add_available_channels(cf_shared(IOReportCopyChannelsInGroup(CFSTR("PMP"), CFSTR("DRAM Energy"), 0, 0, 0)));
+	
+	// e.g. M2 doesn't have above PMP and subgroups. Rely on Model
+	if (m1npoint.counter_to_channel.empty()) {
+		m1npoint.add_available_channels(cf_shared(IOReportCopyChannelsInGroup(CFSTR("Energy Model"), 0, 0, 0, 0)));
+	}
 
 	std::vector<std::string> result;
 	for (const auto & counter_channel: m1npoint.counter_to_channel) {
