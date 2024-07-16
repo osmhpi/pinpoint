@@ -258,8 +258,15 @@ std::vector<std::string> AppleM::detectAvailableCounters()
 	m1npoint.add_available_channels(cf_shared(IOReportCopyChannelsInGroup(CFSTR("PMP"), CFSTR("Energy Counters"), 0, 0, 0)));
 	m1npoint.add_available_channels(cf_shared(IOReportCopyChannelsInGroup(CFSTR("PMP"), CFSTR("DRAM Energy"), 0, 0, 0)));
 	
-	// e.g. M2 doesn't have above PMP and subgroups. Rely on Model
-	if (m1npoint.counter_to_channel.empty()) {
+#if ENABLE_APPLE_SILICON_MODEL
+	const bool always_use_energy_model = true;
+#else
+	const bool always_use_energy_model = false;
+#endif
+	
+	// e.g. M2 doesn't have above PMP and subgroups. Rely on "Energy Model" Group
+	// For comparision this can also enabled by setting the buildoption ENABLE_APPLE_SILICON_MODEL to true
+	if (m1npoint.counter_to_channel.empty() || always_use_energy_model) {
 		m1npoint.add_available_channels(cf_shared(IOReportCopyChannelsInGroup(CFSTR("Energy Model"), 0, 0, 0, 0)));
 	}
 
