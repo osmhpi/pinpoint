@@ -36,6 +36,7 @@ extern uint64_t IOReportSimpleGetIntegerValue(IOReportChannelRef ch, void *);
 extern CFMutableDictionaryRef IOReportCopyChannelsInGroup(CFStringRef, CFStringRef, uint64_t, uint64_t, uint64_t);
 
 extern pid_t IOReportChannelGetChannelID(IOReportChannelRef ch);
+extern CFStringRef IOReportChannelGetGroup(CFDictionaryRef ch);
 extern CFStringRef IOReportChannelGetSubGroup(CFDictionaryRef ch);
 extern CFStringRef IOReportChannelGetChannelName(CFDictionaryRef ch);
 
@@ -122,11 +123,11 @@ public:
 	{
 		// IOReportChannelGetSubGroup etc do not retain ownership.
 		// The returned strings must not be released.
-		std::string name =
-			  cfstr2stdstring(IOReportChannelGetSubGroup(channel))
-			+ ":"
-			+ cfstr2stdstring(IOReportChannelGetChannelName(channel));
+		const std::string group_name = cfstr2stdstring(IOReportChannelGetGroup(channel));
+		const std::string subgroup_name = cfstr2stdstring(IOReportChannelGetSubGroup(channel));
+		const std::string channel_name = cfstr2stdstring(IOReportChannelGetChannelName(channel));
 		
+		std::string name = (subgroup_name.empty() ? group_name : subgroup_name) + ":" + channel_name;
 		std::replace(name.begin(), name.end(), ' ', '_');
 		return name;
 	}
