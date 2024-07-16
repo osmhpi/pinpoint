@@ -14,7 +14,7 @@ At the moment the following platforms are supported:
 
 The interface is to some extent inspired by `perf stat`.
 
-	Usage: pinpoint -h|[-c|-p] [-e dev1,dev2,...] ([-r|-d|-i|-b|-a] N)* [--] workload [args]
+	Usage: pinpoint -h|[-c [--header] [--timestamp]|-p] [-e dev1,dev2,...] ([-r|-d|-i|-b|-a] N)* [--] workload [args]
 		-h Print this help and exit
 		-l Print a list of available counters and exit
 		-c Continuously print power levels (mW) to stdout (skip energy stats)
@@ -25,8 +25,10 @@ The interface is to some extent inspired by `perf stat`.
 		-i Sampling interval in ms (default: 50)
 		-b Start measurement N ms before worker creation (negative values will delay start)
 		-a Continue measurement N ms after worker exited
+		-U Run the workload under this uid
 		
 		--header If continuously printing, print the counter names before each run
+		--timestamp If continuously printing, print the maximum timestamp (timer epoch) of each sample group
 
 Use this tool if you want to start/stop your measurements with your program, or test your implementation of a new data source for power measurements.
 
