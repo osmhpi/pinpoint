@@ -9,6 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include <thread>
+#include <future>
 #include <vector>
 
 #include <sys/wait.h>
@@ -198,15 +199,23 @@ void Experiment::run_single()
 	}
 
 	auto start_time = std::chrono::high_resolution_clock::now();
-	pid_t workload;
-	if ((workload = fork())) {
+
+	if (settings::continuous_print_flag && settings::no_workload_flag) {
+		// do not fork if the continous print flag is set and we do not specify a workload.
 		sampler.start(std::max(-settings::before, std::chrono::milliseconds(0)));
-		waitpid(workload, NULL, 0);
+		std::promise<void>().get_future().wait(); // waits forever
 	} else {
-		if (settings::uid != settings::UID_NOT_SET)
-			setuid(settings::uid);
-		execvp(settings::workload_and_args[0], settings::workload_and_args);
+		pid_t workload;
+		if ((workload = fork())) {
+			sampler.start(std::max(-settings::before, std::chrono::milliseconds(0)));
+			waitpid(workload, NULL, 0);
+		} else {
+			if (settings::uid != settings::UID_NOT_SET)
+				setuid(settings::uid);
+			execvp(settings::workload_and_args[0], settings::workload_and_args);
+		}
 	}
+
 
 	auto end_time = std::chrono::high_resolution_clock::now();
 	auto energy_by_source = sampler.stop(std::chrono::milliseconds(settings::after));
