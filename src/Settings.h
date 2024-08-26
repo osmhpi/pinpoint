@@ -13,9 +13,11 @@ namespace settings {
 // Configurable via command line options
 extern bool continuous_print_flag;
 extern bool continuous_header_flag;
-extern bool	countinous_timestamp_flag;
+extern bool countinous_timestamp_flag;
 extern bool energy_delayed_product;
 extern bool print_counter_list;
+
+extern bool print_total_flag;
 
 extern std::vector<std::string> counters;
 extern unsigned int runs;

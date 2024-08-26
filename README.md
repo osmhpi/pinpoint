@@ -29,6 +29,7 @@ The interface is to some extent inspired by `perf stat`.
 		
 		--header If continuously printing, print the counter names before each run
 		--timestamp If continuously printing, print the maximum timestamp (timer epoch) of each sample group
+		--total If continuously printing, also print total stats
 
 Use this tool if you want to start/stop your measurements with your program, or test your implementation of a new data source for power measurements.
 
