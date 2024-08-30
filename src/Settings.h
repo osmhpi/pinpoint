@@ -13,7 +13,9 @@ namespace settings {
 // Configurable via command line options
 extern bool continuous_print_flag;
 extern bool continuous_header_flag;
-extern bool countinous_timestamp_flag;
+extern bool	countinous_timestamp_flag;
+extern bool no_workload_flag;
+
 extern bool energy_delayed_product;
 extern bool print_counter_list;
 

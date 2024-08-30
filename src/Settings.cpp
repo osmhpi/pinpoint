@@ -10,6 +10,8 @@
 namespace settings {
 
 bool continuous_print_flag = false;
+bool continuous_timestamp_flag = false; // print the timestamp before each measurement if using -c
+bool no_workload_flag = false; // skip execution of workload and print continuously with -c (needs -c to be set)
 bool continuous_header_flag = false;
 bool countinous_timestamp_flag = false;
 bool energy_delayed_product = false;
@@ -68,6 +70,7 @@ void printHelpAndExit(char *progname, int exitcode = 0)
 	std::cout << "\t-i Sampling interval in ms (default: " << interval.count() << ")" << std::endl;
 	std::cout << "\t-b Start measurement N ms before worker creation (negative values will delay start)" << std::endl;
 	std::cout << "\t-a Continue measurement N ms after worker exited" << std::endl;
+	std::cout << "\t-n Disable execution of workload. Only works with -c" << std::endl;
 	std::cout << "\t-o Output file (default: stderr)" << std::endl;
 	std::cout << "\t-U Run the workload under this uid" << std::endl;
 	std::cout << std::endl;
@@ -95,7 +98,7 @@ static struct option longopts[] = {
 void readProgArgs(int argc, char *argv[])
 {
 	int c;
-	while ((c = getopt_long (argc, argv, "hlcpe:r:d:i:b:a:o:U:", longopts, NULL)) != -1) {
+	while ((c = getopt_long (argc, argv, "hlcpne:r:d:i:b:a:o:U:", longopts, NULL)) != -1) {
 		switch (c) {
 			case 'h':
 			case '?':
@@ -143,6 +146,9 @@ void readProgArgs(int argc, char *argv[])
 			case 'U':
 				uid = atoi(optarg);
 				break;
+			case 'n':
+			     no_workload_flag = true;
+			     break;
 			case header:
 				continuous_header_flag = true;
 				break;
@@ -157,7 +163,7 @@ void readProgArgs(int argc, char *argv[])
 		}
 	}
 
-	if (!(optind < argc)) {
+	if (!(optind < argc) || no_workload_flag) {
 		workload_and_args = nullptr;
 	} else {
 		workload_and_args = &argv[optind];
@@ -178,7 +184,13 @@ void validate()
 		}
 		exit(0);
 	}
-	if (!workload_and_args) {
+
+	if (no_workload_flag && !continuous_print_flag) {
+		std::cerr << "-n only works if continous output (-c) is enabled." << std::endl;
+		exit(1);
+	}
+	
+	if (!workload_and_args && !(no_workload_flag && continuous_print_flag)) {
 		std::cerr << "Missing workload" << std::endl;
 		exit(1);
 	}
