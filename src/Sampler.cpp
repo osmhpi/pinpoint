@@ -49,6 +49,7 @@ Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::stri
 
 	std::function<void()> atick  = [this]{accumulate_tick();};
 	std::function<void()> cptick = [this]{continuous_print_tick();};
+	std::function<void()> bothtick = [this]{accumulate_tick();continuous_print_tick();};
 
 	if (settings::continuous_print_flag && settings::continuous_header_flag) {
 		for (auto & s : counterOrAliasNames) m_detail->csv_header += s + ",";
@@ -60,7 +61,9 @@ Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::stri
 	}
 
 	m_detail->worker = std::thread([=]{ run(
-		settings::continuous_print_flag ? cptick : atick
+		settings::continuous_print_flag ? (
+			settings::print_total_flag ? bothtick : cptick
+		) : atick
 	); });
 
 	Registry::callInitializeExperimentsOnOpenSources();

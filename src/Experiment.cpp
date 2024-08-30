@@ -138,7 +138,7 @@ void printSourceLine(const std::array<std::string, columnCount> & columns, const
 
 void Experiment::printResult()
 {
-	if (settings::continuous_print_flag)
+	if (settings::continuous_print_flag && !settings::print_total_flag)
 		return;
 
 	settings::output_stream << "Energy counter stats for '";

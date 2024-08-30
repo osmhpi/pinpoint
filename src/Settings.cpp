@@ -17,6 +17,8 @@ bool countinous_timestamp_flag = false;
 bool energy_delayed_product = false;
 bool print_counter_list = false;
 
+bool print_total_flag = false;
+
 std::vector<std::string> counters;
 unsigned int runs = 1;
 std::chrono::milliseconds delay(0);
@@ -74,6 +76,7 @@ void printHelpAndExit(char *progname, int exitcode = 0)
 	std::cout << std::endl;
 	std::cout << "\t--header If continuously printing, print the counter names before each run" << std::endl;
 	std::cout << "\t--timestamp If continuously printing, print the maximum timestamp (timer epoch) of each sample group" << std::endl;
+	std::cout << "\t--total If continuously printing, also print total stats" << std::endl;
 	exit(exitcode);
 }
 
@@ -82,11 +85,13 @@ void printHelpAndExit(char *progname, int exitcode = 0)
 enum Longopt {
 	header = 256,
 	timestamp = 257,
+	total = 258,
 };
 
 static struct option longopts[] = {
 	{"header", no_argument, NULL, header},
 	{"timestamp", no_argument, NULL, timestamp},
+	{"total", no_argument, NULL, total},
 	{0, 0, 0, 0}
 };
 
@@ -149,6 +154,9 @@ void readProgArgs(int argc, char *argv[])
 				break;
 			case timestamp:
 				countinous_timestamp_flag = true;
+				break;
+			case total:
+				print_total_flag = true;
 				break;
 			default:
 				printHelpAndExit(argv[0], 1);

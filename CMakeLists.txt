@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 option(ENABLE_NVML "Build with NVML support (if available)" ON)
+option(ENABLE_APPLE_SILICON_MODEL "If building on Apple Silicon, always use 'Energy Model' channel" OFF)
 
 include_directories(.)
 include_directories(src)
@@ -24,9 +25,13 @@ if(ENABLE_NVML)
 	find_package(NVML)
 endif(ENABLE_NVML)
 
+if(ENABLE_APPLE_SILICON_MODEL)
+	add_definitions(-DENABLE_APPLE_SILICON_MODEL=1)
+endif(ENABLE_APPLE_SILICON_MODEL)
+
 if(NVML_FOUND)
 	include_directories(${NVML_INCLUDE_DIRS})
-	add_definitions(-DUSE_NVML)
+	add_definitions(-DUSE_NVML=1)
 endif(NVML_FOUND)
 
 #####

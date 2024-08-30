@@ -36,6 +36,7 @@ extern uint64_t IOReportSimpleGetIntegerValue(IOReportChannelRef ch, void *);
 extern CFMutableDictionaryRef IOReportCopyChannelsInGroup(CFStringRef, CFStringRef, uint64_t, uint64_t, uint64_t);
 
 extern pid_t IOReportChannelGetChannelID(IOReportChannelRef ch);
+extern CFStringRef IOReportChannelGetGroup(CFDictionaryRef ch);
 extern CFStringRef IOReportChannelGetSubGroup(CFDictionaryRef ch);
 extern CFStringRef IOReportChannelGetChannelName(CFDictionaryRef ch);
 
@@ -122,11 +123,11 @@ public:
 	{
 		// IOReportChannelGetSubGroup etc do not retain ownership.
 		// The returned strings must not be released.
-		std::string name =
-			  cfstr2stdstring(IOReportChannelGetSubGroup(channel))
-			+ ":"
-			+ cfstr2stdstring(IOReportChannelGetChannelName(channel));
+		const std::string group_name = cfstr2stdstring(IOReportChannelGetGroup(channel));
+		const std::string subgroup_name = cfstr2stdstring(IOReportChannelGetSubGroup(channel));
+		const std::string channel_name = cfstr2stdstring(IOReportChannelGetChannelName(channel));
 		
+		std::string name = (subgroup_name.empty() ? group_name : subgroup_name) + ":" + channel_name;
 		std::replace(name.begin(), name.end(), ' ', '_');
 		return name;
 	}
@@ -256,6 +257,18 @@ std::vector<std::string> AppleM::detectAvailableCounters()
 {
 	m1npoint.add_available_channels(cf_shared(IOReportCopyChannelsInGroup(CFSTR("PMP"), CFSTR("Energy Counters"), 0, 0, 0)));
 	m1npoint.add_available_channels(cf_shared(IOReportCopyChannelsInGroup(CFSTR("PMP"), CFSTR("DRAM Energy"), 0, 0, 0)));
+	
+#if ENABLE_APPLE_SILICON_MODEL
+	const bool always_use_energy_model = true;
+#else
+	const bool always_use_energy_model = false;
+#endif
+	
+	// e.g. M2 doesn't have above PMP and subgroups. Rely on "Energy Model" Group
+	// For comparision this can also enabled by setting the buildoption ENABLE_APPLE_SILICON_MODEL to true
+	if (m1npoint.counter_to_channel.empty() || always_use_energy_model) {
+		m1npoint.add_available_channels(cf_shared(IOReportCopyChannelsInGroup(CFSTR("Energy Model"), 0, 0, 0, 0)));
+	}
 
 	std::vector<std::string> result;
 	for (const auto & counter_channel: m1npoint.counter_to_channel) {
