@@ -14,7 +14,7 @@ bool continuous_print_flag = false;
 bool continuous_timestamp_flag = false; // print the timestamp before each measurement if using -c
 bool no_workload_flag = false; // skip execution of workload and print continuously with -c (needs -c to be set)
 bool continuous_header_flag = false;
-bool countinous_timestamp_flag = false;
+bool continous_timestamp_flag = false;
 bool energy_delayed_product = false;
 bool print_counter_list = false;
 
@@ -154,7 +154,7 @@ void readProgArgs(int argc, char *argv[])
 				continuous_header_flag = true;
 				break;
 			case timestamp:
-				countinous_timestamp_flag = true;
+				continous_timestamp_flag = true;
 				break;
 			case total:
 				print_total_flag = true;
