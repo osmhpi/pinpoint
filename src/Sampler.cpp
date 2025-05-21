@@ -49,10 +49,10 @@ Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::stri
 
 	std::function<void()> atick  = [this]{accumulate_tick();};
 	std::function<void()> cptick = [this]{continuous_print_tick();};
-	std::function<void()> bothtick = [this]{accumulate_tick();continuous_print_tick();};
+	std::function<void()> bothtick = [this]{continuous_print_tick();accumulate_tick();};
 
 	if (settings::continuous_print_flag && settings::continuous_header_flag) {
-		if (settings::countinous_timestamp_flag)
+		if (settings::continous_timestamp_flag)
 			m_detail->csv_header = "timestamp,";
 
 		for (auto & s : counterOrAliasNames)
@@ -61,7 +61,7 @@ Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::stri
 		m_detail->csv_header.back() = '\n';
 	}
 
-	if (settings::continuous_print_flag && settings::countinous_timestamp_flag) {
+	if (settings::continuous_print_flag && settings::continous_timestamp_flag) {
 		settings::output_stream << std::fixed << std::setprecision(4);
 	}
 
@@ -146,7 +146,7 @@ void Sampler::continuous_print_tick()
 		buf[pos - 1] = ',';
 	}
 	buf[pos - 1] = '\0';
-	if (settings::countinous_timestamp_flag) {
+	if (settings::continous_timestamp_flag) {
 		// I wanted to use duration<float, ratio<1>>, but this resulted in weird constant epoch
 		auto ms_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(timestamp.time_since_epoch()).count();
 		settings::output_stream << ms_since_epoch * 0.001 << ",";
