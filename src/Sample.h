@@ -1,6 +1,11 @@
 #pragma once
 
 #include "Units.h"
+#include <chrono>
+
+extern "C" {
+	#include <time.h>
+}
 
 template<class ValueT, class ClockT>
 struct Sample
@@ -36,6 +41,19 @@ struct Sample
 		;;
 	}
 
+	// For C wrapper
+
+	double in_base_unit() const
+	{ return ValueT(value).template to<double>(); }
+
+	void save_timespec(struct timespec *ts) const
+	{
+		auto sec = std::chrono::duration_cast<std::chrono::seconds>(timestamp.time_since_epoch());
+		auto nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(sec - timestamp.time_since_epoch());
+
+		ts->tv_sec = sec.count();
+		ts->tv_nsec = nsec.count();
+	}
 };
 
 using PowerSample = Sample<units::power::watt_t, std::chrono::high_resolution_clock>;

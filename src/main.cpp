@@ -1,5 +1,4 @@
 #include "Experiment.h"
-#include "Sampler.h"
 #include "Settings.h"
 #include "Registry.h"
 

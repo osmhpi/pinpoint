@@ -46,6 +46,7 @@ set(SOURCE_FILES
 	src/Registry.cpp
 	src/Sampler.cpp
 	src/Settings.cpp
+	src/pinpoint_c.cpp
 	src/data_sources/A64FX.cpp
 	src/data_sources/INA226.cpp
 	src/data_sources/JetsonCounter.cpp

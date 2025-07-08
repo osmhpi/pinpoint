@@ -3,14 +3,11 @@
 #include "Sampler.h"
 #include "Settings.h"
 
-#include <array>
-#include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <thread>
 #include <future>
-#include <vector>
 
 #include <sys/wait.h>
 #include <unistd.h>

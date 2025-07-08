@@ -2,7 +2,6 @@
 
 #include <fstream>
 #include <iostream>
-#include <iterator>
 #include <sstream>
 #include <unistd.h>
 #include <getopt.h>
