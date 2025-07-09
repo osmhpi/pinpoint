@@ -1,5 +1,7 @@
 #include "Settings.h"
 
+#include "Registry.h"
+
 #include <fstream>
 #include <iostream>
 #include <sstream>

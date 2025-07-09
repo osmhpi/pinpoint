@@ -42,6 +42,7 @@ endif(NVML_FOUND)
 set(SOURCE_FILES
 	src/EnergyDataSource.cpp
 	src/Experiment.cpp
+	src/PinPointLib.cpp
 	src/PowerDataSource.cpp
 	src/Registry.cpp
 	src/Sampler.cpp

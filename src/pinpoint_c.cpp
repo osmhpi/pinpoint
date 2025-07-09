@@ -1,3 +1,4 @@
+#include "EnergyDataSource.h"
 #include "PowerDataSource.h"
 #include "Registry.h"
 
@@ -94,11 +95,30 @@ void pinpoint_read_energy(pinpoint_source_t src, pinpoint_sample_t *dst)
 	if (!src || !dst) {
 		return;
 	}
+
+	//try {
+		PowerDataSourcePtr *handle = static_cast<PowerDataSourcePtr*>(src);
+		std::shared_ptr<EnergyDataSource> e_handle = std::dynamic_pointer_cast<EnergyDataSource>(*handle);
+		const EnergySample sample = (*e_handle).read_energy();
+		dst->value = sample.in_base_unit();
+		sample.save_timespec(&dst->timestamp);
+	//} catch (...) {
+		return;
+//	}
 }
 
 void pinpoint_read_power(pinpoint_source_t src, pinpoint_sample_t *dst)
 {
 	if (!src || !dst) {
+		return;
+	}
+
+	try {
+		PowerDataSourcePtr *handle = static_cast<PowerDataSourcePtr*>(src);
+		const PowerSample sample = (*handle)->read();
+		dst->value = sample.in_base_unit();
+		sample.save_timespec(&dst->timestamp);
+	} catch (...) {
 		return;
 	}
 }

@@ -1,11 +1,7 @@
 #pragma once
 
-#include "Registry.h"
-
 #include <chrono>
 #include <vector>
-
-
 
 namespace settings {
 
