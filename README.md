@@ -69,7 +69,7 @@ Sample 4 runs of `heatmap` workload in 4 runs with 250ms interval. Mean, along w
 
 		2.87523996 seconds time elapsed ( +- 1.09% )
 
-Note, the `--` seperating arguments from workload call can be skipped, if the workload has no arguments that might be mistaken by POSIX `getopt` as arguments to `pinpoint`. If you want to play safe, include the seperator.
+Note, the `--` separating arguments from workload call can be skipped, if the workload has no arguments that might be mistaken by POSIX `getopt` as arguments to `pinpoint`. If you want to play safe, include the seperator.
 
 #### Selecting Counters, Trimming Your Time Range
 
