@@ -42,12 +42,10 @@ endif(NVML_FOUND)
 set(SOURCE_FILES
 	src/EnergyDataSource.cpp
 	src/Experiment.cpp
-	src/PinPointLib.cpp
 	src/PowerDataSource.cpp
 	src/Registry.cpp
 	src/Sampler.cpp
 	src/Settings.cpp
-	src/pinpoint_c.cpp
 	src/data_sources/A64FX.cpp
 	src/data_sources/INA226.cpp
 	src/data_sources/JetsonCounter.cpp
@@ -55,6 +53,10 @@ set(SOURCE_FILES
 	src/data_sources/NVML.cpp
 	src/data_sources/RAPL.cpp
 	src/data_sources/mcp_com.c
+)
+
+set(LIBRARY_SOURCE_FILES
+	
 )
 
 if(APPLE_SILICON)
@@ -67,7 +69,12 @@ endif(APPLE_SILICON)
 
 add_library(pinpoint_objects OBJECT ${SOURCE_FILES})
 
-add_library(${PINPONT_LIBRARY_NAME} SHARED $<TARGET_OBJECTS:pinpoint_objects>)
+add_library(${PINPONT_LIBRARY_NAME} SHARED
+	$<TARGET_OBJECTS:pinpoint_objects>
+	src/PinPointLib.cpp
+	src/pinpoint_c.cpp
+)
+
 set_target_properties(${PINPONT_LIBRARY_NAME} PROPERTIES OUTPUT_NAME ${PINPOINT_EXECUTABLE_NAME})
 
 
