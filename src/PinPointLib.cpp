@@ -1,4 +1,4 @@
-#include "PinPoint.h"
+#include "PinPointLib.h"
 #include "Registry.h"
 
 #include "Settings.h"

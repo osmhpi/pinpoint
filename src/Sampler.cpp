@@ -52,7 +52,12 @@ Sampler::Sampler(std::chrono::milliseconds interval, const std::vector<std::stri
 	std::function<void()> bothtick = [this]{accumulate_tick();continuous_print_tick();};
 
 	if (settings::continuous_print_flag && settings::continuous_header_flag) {
-		for (auto & s : counterOrAliasNames) m_detail->csv_header += s + ",";
+		if (settings::countinous_timestamp_flag)
+			m_detail->csv_header = "timestamp,";
+
+		for (auto & s : counterOrAliasNames)
+			m_detail->csv_header += s + ",";
+
 		m_detail->csv_header.back() = '\n';
 	}
 
@@ -106,7 +111,7 @@ void Sampler::run(std::function<void()> tick)
 	std::unique_lock<std::mutex> lk(m_detail->start_mutex);
 	m_detail->start_signal.wait(lk, [this]{ return m_detail->startable.load(); });
 
-	fputs(m_detail->csv_header.c_str(), stdout);
+	settings::output_stream << m_detail->csv_header << std::endl;
 
 	while (!m_detail->done.load()) {
 		// FIXME: tiny skid by scheduling + now(). Global start instead?
